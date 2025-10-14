@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 
 const handleLogout = () => {
   localStorage.removeItem("token");
-  localStorage.removeItem("user"); // if you also stored user data
+  localStorage.removeItem("user"); 
   alert("Logged out successfully");
-  window.location.href = "/login"; // redirect to login page
+  window.location.href = "/login"; 
 };
 
 
