@@ -1,25 +1,14 @@
 import React from "react";
-import SearchBar from "../components/SearchBar"
-import { Link } from "react-router-dom";
-import logo from "../assets/logo.webp"
-import Login from "./Login";
 import Products from "./Products";
-const Home = () => {
-    return(
-        <div className="navbar">
-            <div>
-           <img src={logo} width={60} alt="" />
-           <SearchBar/>
-         <Link to="/Login"><button>Login</button></Link>
-          <Link to ="/Singup"><button>Singup</button></Link>
-          </div>
 
-          <div>
-            <Products/>
-          </div>
-     
-        </div>
-    );
-}
+const Home = () => {
+  return (
+    <div className="p-4">
+      {/* ✅ Navbar already shown globally, so don’t repeat here */}
+      <h1 className="text-2xl font-bold mb-4 text-center">Available Products</h1>
+      <Products />
+    </div>
+  );
+};
 
 export default Home;
