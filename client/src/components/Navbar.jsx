@@ -1,14 +1,43 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import logo from "../assets/logo.webp";
-import { ShoppingCart } from "lucide-react"; // 🛒 icon
-import { useCart } from "../context/CartContext"; // ✅ useCart hook
+import { ShoppingCart, LogOut, User } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { logout, getCurrentUser } from "../api/auth";
+import toast from "react-hot-toast";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { cartItems } = useCart();
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const { getTotalItems } = useCart();
+  const cartCount = getTotalItems();
+  const user = getCurrentUser();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out successfully");
+    navigate("/");
+  };
+
+  const getRoleBasedLinks = () => {
+    if (!user) return [];
+
+    const links = [
+      { to: "/", label: "Home" },
+      { to: "/products", label: "Products" },
+    ];
+
+    if (user.role === "seller") {
+      links.push({ to: "/seller", label: "Seller Dashboard" });
+    }
+
+    if (user.role === "admin") {
+      links.push({ to: "/admin", label: "Admin Dashboard" });
+    }
+
+    return links;
+  };
 
   return (
     <nav className="w-full flex items-center justify-between px-6 py-3 bg-white shadow-md sticky top-0 z-50">
@@ -29,10 +58,32 @@ function Navbar() {
 
       {/* Right - Links (Hidden on small screens) */}
       <div className="hidden md:flex items-center gap-6 text-gray-700 font-medium">
-        <Link to="/" className="hover:text-blue-500">Home</Link>
-        <Link to="/products" className="hover:text-blue-500">Products</Link>
-        <Link to="/login" className="hover:text-blue-500">Login</Link>
-        <Link to="/signup" className="hover:text-blue-500">Signup</Link>
+        {getRoleBasedLinks().map((link) => (
+          <Link key={link.to} to={link.to} className="hover:text-blue-500">
+            {link.label}
+          </Link>
+        ))}
+
+        {!user ? (
+          <>
+            <Link to="/login" className="hover:text-blue-500">Login</Link>
+            <Link to="/signup" className="hover:text-blue-500">Signup</Link>
+          </>
+        ) : (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">
+              <User className="inline w-4 h-4 mr-1" />
+              {user.name} ({user.role})
+            </span>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1 text-red-600 hover:text-red-700"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
+        )}
 
         {/* 🛒 Cart Icon */}
         <Link to="/cart" className="relative flex items-center hover:text-blue-600">
@@ -51,12 +102,10 @@ function Navbar() {
         className="md:hidden flex items-center justify-center text-gray-700"
       >
         {menuOpen ? (
-          // Close Icon
           <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          // Hamburger Icon
           <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -66,10 +115,40 @@ function Navbar() {
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md flex flex-col items-center py-4 space-y-3 md:hidden">
-           <Link to="/" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Home</Link>
-          <Link to="/products" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Products</Link>
-          <Link to="/login" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Login</Link>
-          <Link to="/signup" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Signup</Link>
+          {getRoleBasedLinks().map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="hover:text-blue-500"
+              onClick={() => setMenuOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          {!user ? (
+            <>
+              <Link to="/login" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Login</Link>
+              <Link to="/signup" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Signup</Link>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-sm text-gray-600">
+                <User className="inline w-4 h-4 mr-1" />
+                {user.name} ({user.role})
+              </span>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMenuOpen(false);
+                }}
+                className="flex items-center gap-1 text-red-600 hover:text-red-700"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          )}
 
           {/* 🛒 Cart (mobile) */}
           <Link

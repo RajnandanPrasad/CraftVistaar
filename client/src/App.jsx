@@ -1,34 +1,54 @@
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
+import { CartProvider } from "./context/CartContext";
+import { Toaster } from "react-hot-toast";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Home from "./pages/Home";
 import Products from "./pages/Products";
 import BuyPage from "./pages/BuyPage";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Home from "./pages/Home";
-import Navbar from "./components/Navbar";
 import Cart from "./pages/Cart";
-import { CartProvider } from "./context/CartContext";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import SellerDashboard from "./pages/SellerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
     <CartProvider>
       <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route
-            path="/buy/:id"
-            element={
-              <ProtectedRoute>
-                <BuyPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/product/:id" element={<BuyPage />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route
+                path="/seller"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <SellerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+          <Footer />
+          <Toaster position="top-center" reverseOrder={false} />
+        </div>
       </BrowserRouter>
     </CartProvider>
   );
