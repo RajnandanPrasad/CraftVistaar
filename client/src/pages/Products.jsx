@@ -1,52 +1,54 @@
-import React from "react";
-import { Link } from "react-router-dom";
-
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  alert("Logged out successfully");
-  window.location.href = "/login";
-};
-
-const products = [
-  { id: 1, name: "Handmade Vase", price: 200, description: "A beautifully crafted vase made with love and care." },
-  { id: 2, name: "Wooden Frame", price: 150, description: "Elegant wooden photo frame for your memories." },
-  { id: 3, name: "Jute Bag", price: 100, description: "Eco-friendly jute bag for daily use." },
-];
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import ProductCard from "../components/ProductCard";
+import { getProducts } from "../api/products";
 
 export default function Products() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { categoryName } = useParams();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const allProducts = await getProducts();
+        if (categoryName) {
+          const filtered = allProducts.filter(product => product.category === decodeURIComponent(categoryName));
+          setProducts(filtered);
+        } else {
+          setProducts(allProducts);
+        }
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [categoryName]);
+
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
-          🛍️ Available Products
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">
+          🛍️ {categoryName ? `${decodeURIComponent(categoryName)} Products` : "Available Products"}
         </h2>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-        >
-          Logout
-        </button>
+        <p className="text-gray-600">Discover beautiful handmade crafts</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {products.map((p) => (
-          <div
-            key={p.id}
-            className="bg-white shadow-md rounded-2xl p-5 hover:shadow-lg transition-all duration-300 text-center"
-          >
-            <h3 className="text-lg font-semibold text-gray-700">{p.name}</h3>
-            <p className="text-gray-600 mt-2 mb-3">₹{p.price}</p>
-            <p className="text-sm text-gray-500 mb-4">{p.description}</p>
-            <Link
-              to={`/buy/${p.id}`}
-              className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition"
-            >
-              Buy
-            </Link>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
+
+      {products.length === 0 && (
+        <div className="text-center py-10">
+          <p className="text-gray-600 text-lg">No products available at the moment.</p>
+        </div>
+      )}
     </div>
   );
 }

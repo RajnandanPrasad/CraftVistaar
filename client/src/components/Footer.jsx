@@ -1,0 +1,52 @@
+import React from "react";
+import { Link } from "react-router-dom";
+
+export default function Footer() {
+  return (
+    <footer className="bg-gray-800 text-white py-8 mt-12">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Brand */}
+          <div>
+            <h3 className="text-xl font-bold mb-4">CraftKart</h3>
+            <p className="text-gray-300 text-sm">
+              Discover beautiful handmade crafts for your home. Supporting local artisans worldwide.
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/" className="hover:text-blue-400 transition">Home</Link></li>
+              <li><Link to="/products" className="hover:text-blue-400 transition">Products</Link></li>
+              <li><Link to="/cart" className="hover:text-blue-400 transition">Cart</Link></li>
+            </ul>
+          </div>
+
+          {/* Account */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Account</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/login" className="hover:text-blue-400 transition">Login</Link></li>
+              <li><Link to="/signup" className="hover:text-blue-400 transition">Signup</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Contact</h4>
+            <p className="text-gray-300 text-sm">
+              Email: support@craftkart.com<br />
+              Phone: +1 (555) 123-4567
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-400">
+          <p>&copy; 2024 CraftKart. All rights reserved. | Made with ❤️ for artisans.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
