@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { getCurrentUser } from "../api/auth";
+import API from "../api/api";
 import toast from "react-hot-toast";
 
 export default function SellerDashboard() {
@@ -11,24 +12,31 @@ export default function SellerDashboard() {
     description: "",
     price: "",
     category: "",
-    images: ["/assets/product1.jpg"], // Default image
+    images: [""],
   });
 
   const user = getCurrentUser();
 
-  const loadProducts = useCallback(() => {
-    const storedProducts = JSON.parse(localStorage.getItem("craftkart_products") || "[]");
-    const sellerProducts = storedProducts.filter(p => p.sellerId === user.id);
-    setProducts(sellerProducts);
-  }, [user]);
+  // Load seller's products
+  const loadProducts = async () => {
+    try {
+      const res = await API.get("/products");
+      const sellerProducts = res.data.filter((p) => p.sellerId._id === user.id);
+      setProducts(sellerProducts);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load products");
+    }
+  };
 
   useEffect(() => {
     if (user && user.role === "seller") {
       loadProducts();
     }
-  }, [user, loadProducts]);
+  }, [user]);
 
-  const handleSubmit = (e) => {
+  // Submit form
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.title || !formData.description || !formData.price || !formData.category) {
@@ -36,32 +44,26 @@ export default function SellerDashboard() {
       return;
     }
 
-    const storedProducts = JSON.parse(localStorage.getItem("craftkart_products") || "[]");
-
-    if (editingProduct) {
-      // Update existing product
-      const updatedProducts = storedProducts.map(p =>
-        p.id === editingProduct.id
-          ? { ...p, ...formData, price: parseFloat(formData.price) }
-          : p
-      );
-      localStorage.setItem("craftkart_products", JSON.stringify(updatedProducts));
-      toast.success("Product updated successfully!");
-    } else {
-      // Add new product
-      const newProduct = {
-        id: Date.now(),
-        ...formData,
-        price: parseFloat(formData.price),
-        sellerId: user.id,
-      };
-      storedProducts.push(newProduct);
-      localStorage.setItem("craftkart_products", JSON.stringify(storedProducts));
-      toast.success("Product added successfully!");
+    try {
+      if (editingProduct) {
+        await API.put(`/products/${editingProduct._id}`, {
+          ...formData,
+          price: parseFloat(formData.price),
+        });
+        toast.success("Product updated successfully!");
+      } else {
+        await API.post("/products", {
+          ...formData,
+          price: parseFloat(formData.price),
+        });
+        toast.success("Product added successfully!");
+      }
+      loadProducts();
+      resetForm();
+    } catch (err) {
+      console.error(err.response?.data || err);
+      toast.error("Failed to save product. Make sure your seller is verified.");
     }
-
-    loadProducts();
-    resetForm();
   };
 
   const handleEdit = (product) => {
@@ -76,24 +78,20 @@ export default function SellerDashboard() {
     setShowForm(true);
   };
 
-  const handleDelete = (productId) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      const storedProducts = JSON.parse(localStorage.getItem("craftkart_products") || "[]");
-      const filteredProducts = storedProducts.filter(p => p.id !== productId);
-      localStorage.setItem("craftkart_products", JSON.stringify(filteredProducts));
-      loadProducts();
+  const handleDelete = async (productId) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      await API.delete(`/products/${productId}`);
       toast.success("Product deleted successfully!");
+      loadProducts();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete product");
     }
   };
 
   const resetForm = () => {
-    setFormData({
-      title: "",
-      description: "",
-      price: "",
-      category: "",
-      images: ["/assets/product1.jpg"],
-    });
+    setFormData({ title: "", description: "", price: "", category: "", images: [""] });
     setEditingProduct(null);
     setShowForm(false);
   };
@@ -155,6 +153,13 @@ export default function SellerDashboard() {
               className="w-full p-2 border rounded h-24"
               required
             />
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={formData.images[0]}
+              onChange={(e) => setFormData({ ...formData, images: [e.target.value] })}
+              className="w-full p-2 border rounded"
+            />
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -176,14 +181,11 @@ export default function SellerDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <div key={product.id} className="bg-white p-4 rounded-lg shadow-md">
+          <div key={product._id} className="bg-white p-4 rounded-lg shadow-md">
             <img
-              src={product.images[0]}
+              src={product.images[0] || "/assets/logo.webp"}
               alt={product.title}
               className="w-full h-48 object-cover rounded mb-4"
-              onError={(e) => {
-                e.target.src = "/assets/logo.webp";
-              }}
             />
             <h3 className="text-lg font-semibold">{product.title}</h3>
             <p className="text-gray-600 text-sm mb-2">{product.description}</p>
@@ -197,7 +199,7 @@ export default function SellerDashboard() {
                 Edit
               </button>
               <button
-                onClick={() => handleDelete(product.id)}
+                onClick={() => handleDelete(product._id)}
                 className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
               >
                 Delete

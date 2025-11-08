@@ -14,7 +14,9 @@ export default function Products() {
         setLoading(true);
         const allProducts = await getProducts();
         if (categoryName) {
-          const filtered = allProducts.filter(product => product.category === decodeURIComponent(categoryName));
+          const filtered = allProducts.filter(
+            product => product.category.toLowerCase() === decodeURIComponent(categoryName).toLowerCase()
+          );
           setProducts(filtered);
         } else {
           setProducts(allProducts);
@@ -29,6 +31,10 @@ export default function Products() {
     fetchProducts();
   }, [categoryName]);
 
+  if (loading) {
+    return <p className="text-center py-10">Loading products...</p>;
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -38,13 +44,13 @@ export default function Products() {
         <p className="text-gray-600">Discover beautiful handmade crafts</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-
-      {products.length === 0 && (
+      {products.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
+        </div>
+      ) : (
         <div className="text-center py-10">
           <p className="text-gray-600 text-lg">No products available at the moment.</p>
         </div>
