@@ -17,7 +17,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const { token, user } = await login(formData);
+      await login(formData);
       toast.success("Login successful! Redirecting...");
       setTimeout(() => navigate("/products"), 1500);
     } catch (error) {

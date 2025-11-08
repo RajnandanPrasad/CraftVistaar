@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import logo from "../assets/logo.webp";
-import { ShoppingCart, LogOut, User } from "lucide-react";
+import { ShoppingCart, LogOut, User, ChevronDown } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { logout, getCurrentUser } from "../api/auth";
 import toast from "react-hot-toast";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const { getTotalItems } = useCart();
   const cartCount = getTotalItems();
   const user = getCurrentUser();
@@ -18,6 +19,7 @@ function Navbar() {
     logout();
     toast.success("Logged out successfully");
     navigate("/");
+    setDropdownOpen(false);
   };
 
   const getRoleBasedLinks = () => {
@@ -37,6 +39,30 @@ function Navbar() {
     }
 
     return links;
+  };
+
+  const getDropdownLinks = () => {
+    const links = [
+      { to: "/profile", label: "Profile" },
+    ];
+
+    if (user.role === "customer") {
+      links.push({ to: "/orders", label: "My Orders" });
+    }
+
+    if (user.role === "seller") {
+      links.push({ to: "/seller", label: "Add Product" });
+    }
+
+    if (user.role === "admin") {
+      links.push({ to: "/admin", label: "Dashboard" });
+    }
+
+    return links;
+  };
+
+  const getInitials = (name) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
   return (
@@ -66,22 +92,52 @@ function Navbar() {
 
         {!user ? (
           <>
-            <Link to="/login" className="hover:text-blue-500">Login</Link>
-            <Link to="/signup" className="hover:text-blue-500">Signup</Link>
+            <Link to="/auth" className="hover:text-blue-500">Login/Signup</Link>
           </>
         ) : (
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              <User className="inline w-4 h-4 mr-1" />
-              {user.name} ({user.role})
-            </span>
+          <div className="relative">
             <button
-              onClick={handleLogout}
-              className="flex items-center gap-1 text-red-600 hover:text-red-700"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-full"
             >
-              <LogOut className="w-4 h-4" />
-              Logout
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt="Avatar"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  {getInitials(user.name)}
+                </div>
+              )}
+              <ChevronDown className="w-4 h-4" />
             </button>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                <div className="px-4 py-2 border-b border-gray-200">
+                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.role}</p>
+                </div>
+                {getDropdownLinks().map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -127,16 +183,35 @@ function Navbar() {
           ))}
 
           {!user ? (
-            <>
-              <Link to="/login" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Login</Link>
-              <Link to="/signup" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Signup</Link>
-            </>
+            <Link to="/auth" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Login/Signup</Link>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <span className="text-sm text-gray-600">
-                <User className="inline w-4 h-4 mr-1" />
-                {user.name} ({user.role})
-              </span>
+              <div className="flex items-center gap-2">
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Avatar"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                    {getInitials(user.name)}
+                  </div>
+                )}
+                <span className="text-sm text-gray-600">
+                  {user.name} ({user.role})
+                </span>
+              </div>
+              {getDropdownLinks().map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="hover:text-blue-500"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
               <button
                 onClick={() => {
                   handleLogout();

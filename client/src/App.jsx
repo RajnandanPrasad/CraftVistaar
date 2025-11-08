@@ -8,8 +8,8 @@ import Home from "./pages/Home";
 import Products from "./pages/Products";
 import BuyPage from "./pages/BuyPage";
 import Cart from "./pages/Cart";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import Auth from "./pages/Auth";
+import ProductDetails from "./pages/ProductDetails";
 import SellerDashboard from "./pages/SellerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -24,10 +24,9 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
-              <Route path="/product/:id" element={<BuyPage />} />
+              <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+              <Route path="/auth" element={<Auth />} />
               <Route
                 path="/seller"
                 element={

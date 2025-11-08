@@ -1,14 +1,15 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { getCurrentUser, isAuthenticated } from "../api/auth";
 
 export default function ProtectedRoute({ children, requiredRole }) {
-  const token = localStorage.getItem("craftkart_token");
-  const user = JSON.parse(localStorage.getItem("craftkart_currentUser") || "null");
+  const user = getCurrentUser();
+  const authenticated = isAuthenticated();
 
-  if (!token || !user) {
+  if (!authenticated || !user) {
     toast.error("Please login to continue");
-    return <Navigate to="/login" />;
+    return <Navigate to="/auth" />;
   }
 
   if (requiredRole && user.role !== requiredRole) {

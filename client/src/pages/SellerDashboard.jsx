@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getCurrentUser } from "../api/auth";
 import toast from "react-hot-toast";
 
@@ -16,17 +16,17 @@ export default function SellerDashboard() {
 
   const user = getCurrentUser();
 
+  const loadProducts = useCallback(() => {
+    const storedProducts = JSON.parse(localStorage.getItem("craftkart_products") || "[]");
+    const sellerProducts = storedProducts.filter(p => p.sellerId === user.id);
+    setProducts(sellerProducts);
+  }, [user]);
+
   useEffect(() => {
     if (user && user.role === "seller") {
       loadProducts();
     }
-  }, [user]);
-
-  const loadProducts = () => {
-    const storedProducts = JSON.parse(localStorage.getItem("craftkart_products") || "[]");
-    const sellerProducts = storedProducts.filter(p => p.sellerId === user.id);
-    setProducts(sellerProducts);
-  };
+  }, [user, loadProducts]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
