@@ -1,19 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import logo from "../assets/logo.webp";
 import { ShoppingCart, LogOut, User, ChevronDown } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { logout, getCurrentUser } from "../api/auth";
+import { getCategories } from "../api/products";
 import toast from "react-hot-toast";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
   const { getTotalItems } = useCart();
   const cartCount = getTotalItems();
   const user = getCurrentUser();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const cats = await getCategories();
+        if (cats.length > 0) {
+          setCategories(cats);
+        } else {
+          // Fallback to static categories if none fetched
+          setCategories([
+            "Jewelry",
+            "Home Decor",
+            "Clothing & Accessories",
+            "Art & Prints",
+            "Gifts & Stationery",
+            "Trending",
+            "New Arrivals",
+            "Eco-Friendly"
+          ]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+        // Fallback to static categories on error
+        setCategories([
+          "Jewelry",
+          "Home Decor",
+          "Clothing & Accessories",
+          "Art & Prints",
+          "Gifts & Stationery",
+          "Trending",
+          "New Arrivals",
+          "Eco-Friendly"
+        ]);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -67,15 +107,51 @@ function Navbar() {
 
   return (
     <nav className="w-full flex items-center justify-between px-6 py-3 bg-white shadow-md sticky top-0 z-50">
-      {/* Left - Logo */}
-      <Link to="/" className="flex items-center gap-2">
-        <img
-          src={logo}
-          alt="CraftKart Logo"
-          className="h-10 w-10 rounded-full object-cover"
-        />
-        <h1 className="text-2xl font-bold text-gray-800">CraftKart</h1>
-      </Link>
+      {/* Left - Logo and Category Dropdown */}
+      <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src={logo}
+            alt="CraftKart Logo"
+            className="h-10 w-10 rounded-full object-cover"
+          />
+        </Link>
+        <div className="relative">
+          <button
+            onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+            onMouseEnter={() => setCategoryDropdownOpen(true)}
+            onMouseLeave={() => setCategoryDropdownOpen(false)}
+            className="text-2xl font-bold text-gray-800 hover:text-blue-500 flex items-center gap-1"
+          >
+            Category
+            <ChevronDown className="w-5 h-5" />
+          </button>
+          {categoryDropdownOpen && (
+            <div
+              className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50 transition-all duration-200 ease-in-out"
+              onMouseEnter={() => setCategoryDropdownOpen(true)}
+              onMouseLeave={() => setCategoryDropdownOpen(false)}
+            >
+              {categories.length > 0 ? (
+                categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => {
+                      navigate(`/category/${encodeURIComponent(category)}`);
+                      setCategoryDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-150"
+                  >
+                    {category}
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-500">No categories available</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Middle - Search (Hidden on small screens) */}
       <div className="flex-1 mx-6 max-w-lg hidden md:block">
@@ -171,6 +247,38 @@ function Navbar() {
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md flex flex-col items-center py-4 space-y-3 md:hidden">
+          {/* Category Dropdown for Mobile */}
+          <div className="relative w-full flex justify-center">
+            <button
+              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+              className="text-xl font-bold text-gray-800 hover:text-blue-500 flex items-center gap-1"
+            >
+              Category
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            {categoryDropdownOpen && (
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                {categories.length > 0 ? (
+                  categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        navigate(`/category/${encodeURIComponent(category)}`);
+                        setCategoryDropdownOpen(false);
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                    >
+                      {category}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-sm text-gray-500">No categories available</div>
+                )}
+              </div>
+            )}
+          </div>
+
           {getRoleBasedLinks().map((link) => (
             <Link
               key={link.to}

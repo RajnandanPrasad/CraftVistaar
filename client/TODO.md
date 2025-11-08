@@ -1,29 +1,28 @@
-# Implementation Plan for Auth + Role System and Product CRUD
+# TODO: Update Navbar with Category Dropdown
 
-## Backend Updates
-- [ ] Update server/models/User.js: Change password to passwordHash, verified to isVerified, add avatarUrl
-- [ ] Update server/models/Product.js: Change name to title, image to images (array), seller to sellerId, add approved field
-- [ ] Update server/routes/authRoutes.js: Add GET /me and PUT /avatar endpoints
-- [ ] Create/Update server/routes/adminRoutes.js: Implement PUT /verify-seller/:sellerId and GET /sellers
-- [ ] Create/Update server/routes/productRoutes.js: Implement CRUD with role-based access
-- [ ] Update server/middleware/authMiddleware.js: Add roleCheck helper function
-- [ ] Update server/server.js: Mount new routes (admin, product)
+## Backend Changes
+- [x] Add GET /api/products/categories route in server/routes/productRoutes.js to return distinct categories from approved products.
 
-## Frontend Updates
-- [ ] Update client/src/api/auth.js: Add register, login, fetchMe, updateAvatar functions
-- [ ] Update client/src/components/Navbar.jsx: Add avatar dropdown with role-based menu
-- [ ] Update client/src/components/ProtectedRoute.jsx: Add allowedRoles prop and role checking
-- [ ] Create/Update client/src/pages/Auth.jsx: Merge login/signup into single page
-- [ ] Create client/src/pages/ProductDetails.jsx: Dynamic product page with carousel and buy/cart
-- [ ] Update client/src/pages/Products.jsx: Fetch from backend, show approved products to customers
-- [ ] Update client/src/pages/SellerDashboard.jsx: Add/edit/delete products with form
-- [ ] Update client/src/pages/AdminDashboard.jsx: List sellers and verify them
-- [ ] Update client/src/context/CartContext.jsx: Ensure localStorage persistence for "craftkart_cart"
-- [ ] Update client/src/App.jsx: Add new routes, Toaster, axios interceptor for auth header
+## Client API Changes
+- [x] Create client/src/api/products.js with getCategories() function to fetch categories from backend.
+
+## Frontend Component Updates
+- [x] Update client/src/components/Navbar.jsx:
+  - Keep logo unchanged.
+  - Replace "CraftKart" text with Category dropdown menu.
+  - Fetch categories dynamically.
+  - Implement hover/click dropdown with TailwindCSS styling.
+  - Navigate to /category/:categoryName on category click.
+  - Ensure mobile responsiveness.
+
+## Routing Updates
+- [x] Update client/src/App.jsx to add route /category/:categoryName pointing to Products component.
+
+## Page Updates
+- [x] Update client/src/pages/Products.jsx:
+  - Fetch products from backend API.
+  - Filter products by category if categoryName param is present.
 
 ## Testing
-- [ ] Test signup as seller (isVerified=false), login, cannot add product
-- [ ] Test admin verify seller, seller can add product
-- [ ] Test product approval by admin, visible to customers
-- [ ] Test role-based redirects and navbar dropdown
-- [ ] Test cart persistence and auth token storage
+- [x] Test dropdown functionality, navigation, product filtering, and responsiveness.
+- [x] Ensure no layout breaks, logo position unchanged, no React/Tailwind errors.
