@@ -113,7 +113,7 @@ function Navbar() {
           <img
             src={logo}
             alt="CraftKart Logo"
-            className="h-10 w-10 rounded-full object-cover"
+            className="h-14 w-14 rounded-full object-cover shadow-lg hover:scale-110 transition-all duration-200"
           />
         </Link>
         <div className="relative">
