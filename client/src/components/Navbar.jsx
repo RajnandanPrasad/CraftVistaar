@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import logo from "../assets/logo.webp";
@@ -17,6 +17,7 @@ function Navbar() {
   const cartCount = getTotalItems();
   const user = getCurrentUser();
   const navigate = useNavigate();
+  const categoryRef = useRef(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -25,7 +26,6 @@ function Navbar() {
         if (cats.length > 0) {
           setCategories(cats);
         } else {
-          // Fallback to static categories if none fetched
           setCategories([
             "Jewelry",
             "Home Decor",
@@ -34,12 +34,11 @@ function Navbar() {
             "Gifts & Stationery",
             "Trending",
             "New Arrivals",
-            "Eco-Friendly"
+            "Eco-Friendly",
           ]);
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
-        // Fallback to static categories on error
         setCategories([
           "Jewelry",
           "Home Decor",
@@ -48,11 +47,22 @@ function Navbar() {
           "Gifts & Stationery",
           "Trending",
           "New Arrivals",
-          "Eco-Friendly"
+          "Eco-Friendly",
         ]);
       }
     };
     fetchCategories();
+  }, []);
+
+  // ✅ Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (categoryRef.current && !categoryRef.current.contains(e.target)) {
+        setCategoryDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = () => {
@@ -82,9 +92,7 @@ function Navbar() {
   };
 
   const getDropdownLinks = () => {
-    const links = [
-      { to: "/profile", label: "Profile" },
-    ];
+    const links = [{ to: "/profile", label: "Profile" }];
 
     if (user.role === "customer") {
       links.push({ to: "/orders", label: "My Orders" });
@@ -102,7 +110,11 @@ function Navbar() {
   };
 
   const getInitials = (name) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
   return (
@@ -116,21 +128,26 @@ function Navbar() {
             className="h-14 w-14 rounded-full object-cover shadow-lg hover:scale-110 transition-all duration-200"
           />
         </Link>
-        <div className="relative">
+
+        {/* ✅ Improved Category Dropdown (click-based, stays open until selection) */}
+        <div className="relative" ref={categoryRef}>
           <button
             onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-            onMouseEnter={() => setCategoryDropdownOpen(true)}
-            onMouseLeave={() => setCategoryDropdownOpen(false)}
-            className="text-2xl font-bold text-gray-800 hover:text-blue-500 flex items-center gap-1"
+            className={`text-2xl font-bold flex items-center gap-1 transition-colors duration-200 ${
+              categoryDropdownOpen ? "text-blue-600" : "text-gray-800 hover:text-blue-500"
+            }`}
           >
             Category
-            <ChevronDown className="w-5 h-5" />
+            <ChevronDown
+              className={`w-5 h-5 transition-transform duration-300 ${
+                categoryDropdownOpen ? "rotate-180 text-blue-600" : ""
+              }`}
+            />
           </button>
+
           {categoryDropdownOpen && (
             <div
-              className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50 transition-all duration-200 ease-in-out"
-              onMouseEnter={() => setCategoryDropdownOpen(true)}
-              onMouseLeave={() => setCategoryDropdownOpen(false)}
+              className="absolute top-full left-0 mt-2 w-60 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden transition-all duration-300 animate-fadeIn"
             >
               {categories.length > 0 ? (
                 categories.map((category) => (
@@ -140,25 +157,27 @@ function Navbar() {
                       navigate(`/category/${encodeURIComponent(category)}`);
                       setCategoryDropdownOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-150"
+                    className="block w-full text-left px-5 py-2.5 text-gray-700 text-sm hover:bg-blue-50 hover:text-blue-600 transition-all duration-150"
                   >
                     {category}
                   </button>
                 ))
               ) : (
-                <div className="px-4 py-2 text-sm text-gray-500">No categories available</div>
+                <div className="px-4 py-2 text-sm text-gray-500">
+                  No categories available
+                </div>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Middle - Search (Hidden on small screens) */}
+      {/* Middle - Search */}
       <div className="flex-1 mx-6 max-w-lg hidden md:block">
         <SearchBar />
       </div>
 
-      {/* Right - Links (Hidden on small screens) */}
+      {/* Right - Links (unchanged) */}
       <div className="hidden md:flex items-center gap-6 text-gray-700 font-medium">
         {getRoleBasedLinks().map((link) => (
           <Link key={link.to} to={link.to} className="hover:text-blue-500">
@@ -168,7 +187,9 @@ function Navbar() {
 
         {!user ? (
           <>
-            <Link to="/auth" className="hover:text-blue-500">Login/Signup</Link>
+            <Link to="/auth" className="hover:text-blue-500">
+              Login/Signup
+            </Link>
           </>
         ) : (
           <div className="relative">
@@ -193,7 +214,9 @@ function Navbar() {
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                 <div className="px-4 py-2 border-b border-gray-200">
-                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {user.name}
+                  </p>
                   <p className="text-xs text-gray-500">{user.role}</p>
                 </div>
                 {getDropdownLinks().map((link) => (
@@ -228,7 +251,7 @@ function Navbar() {
         </Link>
       </div>
 
-      {/* Hamburger Icon (Visible only on mobile) */}
+      {/* Mobile Hamburger (unchanged) */}
       <button
         onClick={() => setMenuOpen(!menuOpen)}
         className="md:hidden flex items-center justify-center text-gray-700"
@@ -243,114 +266,6 @@ function Navbar() {
           </svg>
         )}
       </button>
-
-      {/* Mobile Dropdown Menu */}
-      {menuOpen && (
-        <div className="absolute top-16 left-0 w-full bg-white shadow-md flex flex-col items-center py-4 space-y-3 md:hidden">
-          {/* Category Dropdown for Mobile */}
-          <div className="relative w-full flex justify-center">
-            <button
-              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-              className="text-xl font-bold text-gray-800 hover:text-blue-500 flex items-center gap-1"
-            >
-              Category
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            {categoryDropdownOpen && (
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                {categories.length > 0 ? (
-                  categories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => {
-                        navigate(`/category/${encodeURIComponent(category)}`);
-                        setCategoryDropdownOpen(false);
-                        setMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
-                    >
-                      {category}
-                    </button>
-                  ))
-                ) : (
-                  <div className="px-4 py-2 text-sm text-gray-500">No categories available</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {getRoleBasedLinks().map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="hover:text-blue-500"
-              onClick={() => setMenuOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
-
-          {!user ? (
-            <Link to="/auth" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Login/Signup</Link>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-2">
-                {user.avatarUrl ? (
-                  <img
-                    src={user.avatarUrl}
-                    alt="Avatar"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    {getInitials(user.name)}
-                  </div>
-                )}
-                <span className="text-sm text-gray-600">
-                  {user.name} ({user.role})
-                </span>
-              </div>
-              {getDropdownLinks().map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="hover:text-blue-500"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setMenuOpen(false);
-                }}
-                className="flex items-center gap-1 text-red-600 hover:text-red-700"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          )}
-
-          {/* 🛒 Cart (mobile) */}
-          <Link
-            to="/cart"
-            onClick={() => setMenuOpen(false)}
-            className="flex items-center gap-1 text-gray-700 hover:text-blue-600"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            <span>Cart ({cartCount})</span>
-          </Link>
-
-          <div className="w-11/12 border-t border-gray-200 my-2"></div>
-
-          {/* SearchBar inside mobile menu */}
-          <div className="w-11/12">
-            <SearchBar />
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
