@@ -18,7 +18,7 @@ export default function ProductCard({ product }) {
         alt={product.title}
         className="w-full h-48 object-cover rounded-lg mb-4"
         onError={(e) => {
-          e.target.src = "/assets/logo.webp"; // Fallback image
+          e.target.src = "/assets/logo.webp"; 
         }}
       />
       <h3 className="text-lg font-semibold text-gray-800 mb-2">{product.title}</h3>
