@@ -1,22 +1,28 @@
 const express = require('express');
+const cors = require("cors");  // ✅ Add this
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 require('dotenv').config();
 
 const app = express();
 connectDB();
-const cors = require("cors");
+
 app.use(cors({
-    origin: "http://localhost:5173",
-    credentials: true
+  origin: "http://localhost:5173",
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
-app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/products", productRoutes);
+app.use("/api/auth", require('./routes/authRoutes'));
+app.use("/api/admin", require('./routes/adminRoutes'));
+app.use("/api/products", require('./routes/productRoutes'));
+app.use("/api/orders", require('./routes/orderRoutes'));
+
+
 
 // Error handler
 app.use((err, req, res, next) => {

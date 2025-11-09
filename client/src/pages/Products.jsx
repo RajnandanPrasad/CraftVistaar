@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { getProducts } from "../api/products";
+import { getPublicProducts } from "../api/products";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -12,31 +12,32 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const allProducts = await getProducts();
+        const allProducts = await getPublicProducts(); // fetch only approved products
+
+        // Filter by category if needed
+        let filtered = allProducts;
         if (categoryName) {
-          const filtered = allProducts.filter(
-            product => product.category.toLowerCase() === decodeURIComponent(categoryName).toLowerCase()
+          filtered = allProducts.filter(
+            (p) => p.category?.toLowerCase() === decodeURIComponent(categoryName).toLowerCase()
           );
-          setProducts(filtered);
-        } else {
-          setProducts(allProducts);
         }
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
+
+        setProducts(filtered);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
         setProducts([]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, [categoryName]);
 
-  if (loading) {
-    return <p className="text-center py-10">Loading products...</p>;
-  }
+  if (loading) return <p className="text-center py-10 text-lg">Loading products...</p>;
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <h2 className="text-3xl font-bold text-gray-800 mb-2">
           🛍️ {categoryName ? `${decodeURIComponent(categoryName)} Products` : "Available Products"}

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { getCurrentUser } from "../api/auth";
+import API from "../api/api";
 import toast from "react-hot-toast";
 
 export default function AdminDashboard() {
@@ -7,50 +8,211 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("users");
+  const [loading, setLoading] = useState(false);
 
-  const user = getCurrentUser();
+  // search & filters
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("");
+  // pagination
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
+
+  // read current user once to avoid effect loops
+  const [user] = useState(() => getCurrentUser()); // call once on mount
 
   useEffect(() => {
+    const token = localStorage.getItem("craftkart_token");
+    if (!token) return;
     if (user && user.role === "admin") {
-      loadData();
+      loadAll();
     }
   }, [user]);
 
-  const loadData = () => {
-    const storedUsers = JSON.parse(localStorage.getItem("craftkart_users") || "[]");
-    const storedProducts = JSON.parse(localStorage.getItem("craftkart_products") || "[]");
-    const storedOrders = JSON.parse(localStorage.getItem("craftkart_orders") || "[]");
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, query, filter]);
 
-    setUsers(storedUsers);
-    setProducts(storedProducts);
-    setOrders(storedOrders);
-  };
-
-  const handleDeleteUser = (userId) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      const updatedUsers = users.filter(u => u.id !== userId);
-      localStorage.setItem("craftkart_users", JSON.stringify(updatedUsers));
-      setUsers(updatedUsers);
-      toast.success("User deleted successfully!");
+  const loadAll = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([loadUsers(), loadProducts(), loadOrders()]);
+    } catch (err) {
+      console.error("loadAll error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteProduct = (productId) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      const updatedProducts = products.filter(p => p.id !== productId);
-      localStorage.setItem("craftkart_products", JSON.stringify(updatedProducts));
-      setProducts(updatedProducts);
-      toast.success("Product deleted successfully!");
+  // ----- Fetchers -----
+  const loadUsers = async () => {
+    try {
+      const res = await API.get("/admin/sellers");
+      setUsers(res.data || []);
+    } catch (err) {
+      console.error("Failed to load users:", err.response?.data || err.message);
+      toast.error("Failed to load users");
+      setUsers([]);
     }
   };
 
-  const handleDeleteOrder = (orderId) => {
-    if (window.confirm("Are you sure you want to delete this order?")) {
-      const updatedOrders = orders.filter(o => o.id !== orderId);
-      localStorage.setItem("craftkart_orders", JSON.stringify(updatedOrders));
-      setOrders(updatedOrders);
-      toast.success("Order deleted successfully!");
+  const loadProducts = async () => {
+    try {
+      const res = await API.get("/admin/products");
+      setProducts(res.data || []);
+    } catch (err) {
+      console.error("Failed to load products:", err.response?.data || err.message);
+      toast.error("Failed to load products");
+      setProducts([]);
     }
+  };
+
+  const loadOrders = async () => {
+    try {
+      const res = await API.get("/admin/orders");
+      setOrders(res.data || []);
+    } catch (err) {
+      console.error("Failed to load orders:", err.response?.data || err.message);
+      toast.error("Failed to load orders");
+      setOrders([]);
+    }
+  };
+
+  // ----- Actions -----
+  const verifySeller = async (sellerId) => {
+    if (!window.confirm("Verify this seller?")) return;
+    try {
+      await API.put(`/admin/verify-seller/${sellerId}`);
+      toast.success("Seller verified");
+      await loadUsers();
+    } catch (err) {
+      console.error("verifySeller error:", err.response?.data || err.message);
+      toast.error("Failed to verify seller");
+    }
+  };
+
+  const approveProduct = async (productId) => {
+    if (!window.confirm("Approve this product?")) return;
+    try {
+      await API.put(`/admin/products/${productId}/approve`);
+      toast.success("Product approved");
+      await loadProducts();
+    } catch (err) {
+      console.error("approveProduct error:", err.response?.data || err.message);
+      toast.error("Failed to approve product");
+    }
+  };
+
+  const rejectProduct = async (productId) => {
+    if (!window.confirm("Reject and remove this product?")) return;
+    try {
+      await API.delete(`/admin/products/${productId}/reject`);
+      toast.success("Product rejected and removed");
+      await loadProducts();
+    } catch (err) {
+      console.error("rejectProduct error:", err.response?.data || err.message);
+      toast.error("Failed to reject product");
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    if (!window.confirm("Delete this user permanently?")) return;
+    try {
+      await API.delete(`/admin/users/${userId}`);
+      toast.success("User deleted");
+      await loadUsers();
+    } catch (err) {
+      console.error("deleteUser error:", err.response?.data || err.message);
+      toast.error("Failed to delete user");
+    }
+  };
+
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      await API.put(`/admin/orders/${orderId}`, { status });
+      toast.success("Order status updated");
+      await loadOrders();
+    } catch (err) {
+      console.error("updateOrderStatus error:", err.response?.data || err.message);
+      toast.error("Failed to update order status");
+    }
+  };
+
+  // ----- Helpers -----
+  const listForActiveTab = useMemo(() => {
+    if (activeTab === "users") return users;
+    if (activeTab === "products") return products;
+    if (activeTab === "orders") return orders;
+    return [];
+  }, [activeTab, users, products, orders]);
+
+  const filteredList = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const f = filter.trim().toLowerCase();
+    return listForActiveTab.filter((item) => {
+      if (activeTab === "users") {
+        const matchesQ =
+          !q ||
+          item.name?.toLowerCase().includes(q) ||
+          item.email?.toLowerCase().includes(q) ||
+          (item.role || "").toLowerCase().includes(q) ||
+          (item._id || "").toString().includes(q);
+        const matchesF =
+          !f ||
+          (item.role || "").toLowerCase() === f ||
+          (item.isVerified ? "verified" : "unverified") === f;
+        return matchesQ && matchesF;
+      }
+      if (activeTab === "products") {
+        const matchesQ =
+          !q ||
+          item.title?.toLowerCase().includes(q) ||
+          item.description?.toLowerCase().includes(q) ||
+          (item.category || "").toLowerCase().includes(q) ||
+          (item._id || "").toString().includes(q);
+        const matchesF =
+          !f ||
+          (item.category || "").toLowerCase() === f ||
+          (item.approved ? "approved" : "pending") === f;
+        return matchesQ && matchesF;
+      }
+      if (activeTab === "orders") {
+        const matchesQ =
+          !q ||
+          (item._id || "").toString().includes(q) ||
+          (item.userId?.name || "").toLowerCase().includes(q) ||
+          (item.status || "").toLowerCase().includes(q);
+        const matchesF = !f || (item.status || "").toLowerCase() === f;
+        return matchesQ && matchesF;
+      }
+      return true;
+    });
+  }, [listForActiveTab, activeTab, query, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredList.length / pageSize));
+  const paginatedList = filteredList.slice((page - 1) * pageSize, page * pageSize);
+
+  const exportCSV = (rows, filename = "export.csv") => {
+    if (!rows || rows.length === 0) {
+      toast("Nothing to export");
+      return;
+    }
+    const keys = Object.keys(rows[0]);
+    const csv = [
+      keys.join(","),
+      ...rows.map((r) =>
+        keys
+          .map((k) => `"${(r[k] ?? "").toString().replace(/"/g, '""')}"`)
+          .join(",")
+      ),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exported");
   };
 
   if (!user || user.role !== "admin") {
@@ -58,131 +220,225 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold text-gray-800">Admin Dashboard</h2>
+        <button
+          onClick={loadAll}
+          className="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300"
+          title="Reload"
+        >
+          Refresh
+        </button>
+      </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-4 mb-4">
         <button
           onClick={() => setActiveTab("users")}
-          className={`px-4 py-2 rounded ${activeTab === "users" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded ${
+            activeTab === "users" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
         >
           Users ({users.length})
         </button>
         <button
           onClick={() => setActiveTab("products")}
-          className={`px-4 py-2 rounded ${activeTab === "products" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded ${
+            activeTab === "products" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
         >
           Products ({products.length})
         </button>
         <button
           onClick={() => setActiveTab("orders")}
-          className={`px-4 py-2 rounded ${activeTab === "orders" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded ${
+            activeTab === "orders" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
         >
           Orders ({orders.length})
         </button>
       </div>
 
-      {/* Users Tab */}
+      {/* Search / Filter / Export */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+        <div className="flex gap-2 items-center">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search..."
+            className="p-2 border rounded w-56"
+          />
+          <input
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filter (approved, pending, verified, shipped)"
+            className="p-2 border rounded w-64"
+          />
+          <button
+            onClick={() => { setQuery(""); setFilter(""); }}
+            className="px-3 py-2 rounded bg-gray-200"
+          >
+            Clear
+          </button>
+        </div>
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={() => exportCSV(filteredList.map(r => ({ ...r })), `${activeTab}_export.csv`)}
+            className="px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+          >
+            Export CSV
+          </button>
+          <div className="text-sm text-gray-600">Showing {filteredList.length} result(s)</div>
+        </div>
+      </div>
+
+      {loading && <div className="text-center py-8">Loading...</div>}
+
+      {/* ----- Render Users ----- */}
       {activeTab === "users" && (
-        <div>
-          <h3 className="text-xl font-semibold mb-4">All Users</h3>
-          <div className="space-y-4">
-            {users.map((u) => (
-              <div key={u.id} className="bg-white p-4 rounded-lg shadow flex justify-between items-center">
-                <div>
-                  <p className="font-semibold">{u.name}</p>
-                  <p className="text-gray-600">{u.email}</p>
-                  <p className="text-sm text-blue-600">Role: {u.role}</p>
-                </div>
-                <button
-                  onClick={() => handleDeleteUser(u.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 border">ID</th>
+                <th className="px-4 py-2 border">Name</th>
+                <th className="px-4 py-2 border">Email</th>
+                <th className="px-4 py-2 border">Role</th>
+                <th className="px-4 py-2 border">Verified</th>
+                <th className="px-4 py-2 border">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedList.map((u) => (
+                <tr key={u._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border">{u._id}</td>
+                  <td className="px-4 py-2 border">{u.name}</td>
+                  <td className="px-4 py-2 border">{u.email}</td>
+                  <td className="px-4 py-2 border">{u.role}</td>
+                  <td className="px-4 py-2 border">{u.isVerified ? "Yes" : "No"}</td>
+                  <td className="px-4 py-2 border flex gap-2">
+                    {!u.isVerified && (
+                      <button
+                        onClick={() => verifySeller(u._id)}
+                        className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                      >
+                        Verify
+                      </button>
+                    )}
+                    <button
+                      onClick={() => deleteUser(u._id)}
+                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {paginatedList.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-4 py-2 text-center text-gray-500">
+                    No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Products Tab */}
+      {/* ----- Render Products ----- */}
       {activeTab === "products" && (
-        <div>
-          <h3 className="text-xl font-semibold mb-4">All Products</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {products.map((p) => (
-              <div key={p.id} className="bg-white p-4 rounded-lg shadow">
-                <img
-                  src={p.images[0]}
-                  alt={p.title}
-                  className="w-full h-32 object-cover rounded mb-2"
-                  onError={(e) => {
-                    e.target.src = "/assets/logo.webp";
-                  }}
-                />
-                <h4 className="font-semibold">{p.title}</h4>
-                <p className="text-gray-600 text-sm">{p.description}</p>
-                <p className="text-green-600 font-bold">₹{p.price}</p>
-                <p className="text-xs text-gray-500">Seller ID: {p.sellerId}</p>
-                <button
-                  onClick={() => handleDeleteProduct(p.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 mt-2"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 border">ID</th>
+                <th className="px-4 py-2 border">Title</th>
+                <th className="px-4 py-2 border">Category</th>
+                <th className="px-4 py-2 border">Seller</th>
+                <th className="px-4 py-2 border">Status</th>
+                <th className="px-4 py-2 border">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedList.map((p) => (
+                <tr key={p._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border">{p._id}</td>
+                  <td className="px-4 py-2 border">{p.title}</td>
+                  <td className="px-4 py-2 border">{p.category}</td>
+                  <td className="px-4 py-2 border">{p.sellerId?.name || "—"}</td>
+                  <td className="px-4 py-2 border">{p.approved ? "Approved" : "Pending"}</td>
+                  <td className="px-4 py-2 border flex gap-2">
+                    {!p.approved && (
+                      <button
+                        onClick={() => approveProduct(p._id)}
+                        className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                    )}
+                    <button
+                      onClick={() => rejectProduct(p._id)}
+                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      Reject
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {paginatedList.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-4 py-2 text-center text-gray-500">
+                    No products found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Orders Tab */}
+      {/* ----- Render Orders ----- */}
       {activeTab === "orders" && (
-        <div>
-          <h3 className="text-xl font-semibold mb-4">All Orders</h3>
-          <div className="space-y-4">
-            {orders.map((o) => (
-              <div key={o.id} className="bg-white p-4 rounded-lg shadow">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-semibold">Order #{o.id}</p>
-                    <p className="text-gray-600">User ID: {o.userId}</p>
-                    <p className="text-sm text-gray-500">
-                      Date: {new Date(o.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-green-600">₹{o.total}</p>
-                    <p className="text-sm text-blue-600">Status: {o.status}</p>
-                  </div>
-                </div>
-                <div className="mb-2">
-                  <p className="text-sm font-medium">Items:</p>
-                  {o.items.map((item, index) => (
-                    <p key={index} className="text-sm text-gray-600">
-                      {item.title} x {item.quantity} = ₹{item.price * item.quantity}
-                    </p>
-                  ))}
-                </div>
-                <button
-                  onClick={() => handleDeleteOrder(o.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                >
-                  Delete Order
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {(users.length === 0 && activeTab === "users") ||
-       (products.length === 0 && activeTab === "products") ||
-       (orders.length === 0 && activeTab === "orders") && (
-        <div className="text-center py-10">
-          <p className="text-gray-600">No {activeTab} found.</p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 border">ID</th>
+                <th className="px-4 py-2 border">User</th>
+                <th className="px-4 py-2 border">Status</th>
+                <th className="px-4 py-2 border">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedList.map((o) => (
+                <tr key={o._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border">{o._id}</td>
+                  <td className="px-4 py-2 border">{o.userId?.name || "—"}</td>
+                  <td className="px-4 py-2 border">{o.status}</td>
+                  <td className="px-4 py-2 border flex gap-2">
+                    {["pending", "shipped", "delivered"].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => updateOrderStatus(o._id, s)}
+                        className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </button>
+                    ))}
+                  </td>
+                </tr>
+              ))}
+              {paginatedList.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="px-4 py-2 text-center text-gray-500">
+                    No orders found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

@@ -137,6 +137,11 @@ export default function SellerDashboard() {
                 step="0.01"
                 required
               />
+
+              
+
+
+
             </div>
             <input
               type="text"
@@ -190,6 +195,14 @@ export default function SellerDashboard() {
             <h3 className="text-lg font-semibold">{product.title}</h3>
             <p className="text-gray-600 text-sm mb-2">{product.description}</p>
             <p className="text-green-600 font-bold">₹{product.price}</p>
+            <p className="text-xs mt-1">
+  {product.approved ? (
+    <span className="text-green-600 font-semibold">✅ Approved</span>
+  ) : (
+    <span className="text-yellow-600 font-semibold">⏳ Pending Approval</span>
+  )}
+</p>
+
             <p className="text-xs text-gray-500">{product.category}</p>
             <div className="flex gap-2 mt-4">
               <button
