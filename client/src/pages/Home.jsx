@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import ProductCard from "../components/ProductCard";
 import heroImg from "../assets/hero-handmade.jpg";
+import CategorySection from "../components/CategorySection";
+import MeetMakers from "../components/MeetMakers";
+import WhyChooseCraftKart from "../components/WhyChooseCraftKart";
+import Testimonials from "../components/Testimonials";
+import Newsletter from "../components/Newsletter";
+import CTASection from "../components/CTASection";
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -198,7 +204,15 @@ const Home = () => {
             </button>
           )}
         </div>
+
       </section>
+      <CategorySection />
+<MeetMakers />
+<WhyChooseCraftKart />
+<Testimonials />
+<Newsletter />
+<CTASection />
+
     </div>
   );
 };
