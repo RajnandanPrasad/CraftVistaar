@@ -3,6 +3,20 @@ import { getCurrentUser } from "../api/auth";
 import API from "../api/api";
 import toast from "react-hot-toast";
 
+const categories = [
+  "Clothing",
+  "Electronics",
+  "Grocery",
+  "Fitness",
+  "Toys",
+  "Home Decor",
+  "Footwear",
+  "Beauty",
+  "Kitchen",
+  "Accessories",
+];
+
+
 export default function SellerDashboard() {
   const [products, setProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -138,19 +152,25 @@ export default function SellerDashboard() {
                 required
               />
 
-              
+
 
 
 
             </div>
-            <input
-              type="text"
-              placeholder="Category"
+            <select
+              className="w-full p-2 border rounded"
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full p-2 border rounded"
               required
-            />
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+
             <textarea
               placeholder="Description"
               value={formData.description}
@@ -196,12 +216,12 @@ export default function SellerDashboard() {
             <p className="text-gray-600 text-sm mb-2">{product.description}</p>
             <p className="text-green-600 font-bold">₹{product.price}</p>
             <p className="text-xs mt-1">
-  {product.approved ? (
-    <span className="text-green-600 font-semibold">✅ Approved</span>
-  ) : (
-    <span className="text-yellow-600 font-semibold">⏳ Pending Approval</span>
-  )}
-</p>
+              {product.approved ? (
+                <span className="text-green-600 font-semibold">✅ Approved</span>
+              ) : (
+                <span className="text-yellow-600 font-semibold">⏳ Pending Approval</span>
+              )}
+            </p>
 
             <p className="text-xs text-gray-500">{product.category}</p>
             <div className="flex gap-2 mt-4">

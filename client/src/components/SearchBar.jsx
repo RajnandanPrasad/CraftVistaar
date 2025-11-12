@@ -14,10 +14,11 @@ const SearchBar = () => {
         setSuggestions([]);
         return;
       }
+
       try {
         setLoading(true);
         const { data } = await axios.get(
-          `https://dummyjson.com/products/search?q=${value}`
+          `http://localhost:5000/api/products/search?q=${encodeURIComponent(value)}`
         );
         setSuggestions(data.products || []);
       } catch (error) {
@@ -33,7 +34,7 @@ const SearchBar = () => {
   const handleSelect = (item) => {
     setValue(item.title);
     setSuggestions([]);
-    navigate(`/buy/${item.id}`);
+    navigate(`/products/search?query=${encodeURIComponent(item.title)}`);
   };
 
   return (
@@ -44,6 +45,13 @@ const SearchBar = () => {
         placeholder="Search products..."
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            navigate(`/products/search?query=${encodeURIComponent(value)}`);
+            setSuggestions([]);
+          }
+        }}
       />
 
       {loading && (
@@ -54,7 +62,7 @@ const SearchBar = () => {
         <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-md mt-1 max-h-60 overflow-y-auto">
           {suggestions.map((item) => (
             <li
-              key={item.id}
+              key={item._id}
               className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
               onClick={() => handleSelect(item)}
             >

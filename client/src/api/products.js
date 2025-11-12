@@ -28,3 +28,10 @@ export const getCategories = async () => {
   const res = await API.get("/products/categories/distinct");
   return res.data;
 };
+
+
+// Get public product by ID
+export const getPublicProductById = async (id) => {
+  const res = await API.get(`/products/public/${id}`);
+  return res.data;
+};

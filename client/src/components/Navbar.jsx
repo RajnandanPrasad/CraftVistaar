@@ -13,8 +13,11 @@ function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [categories, setCategories] = useState([]);
-  const { getTotalItems } = useCart();
+
+  // ✅ include clearCart to reset cart on logout
+  const { getTotalItems, clearCart } = useCart();
   const cartCount = getTotalItems();
+
   const user = getCurrentUser();
   const navigate = useNavigate();
   const categoryRef = useRef(null);
@@ -65,8 +68,10 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ✅ Fix: Clear cart on logout
   const handleLogout = () => {
-    logout();
+    logout(); // remove user token/session
+    clearCart(); // clear cart items from context/localStorage
     toast.success("Logged out successfully");
     navigate("/");
     setDropdownOpen(false);
@@ -157,11 +162,15 @@ function Navbar() {
       {/* Right - Links */}
       <div className="hidden md:flex items-center gap-6 text-gray-700 font-medium">
         {getRoleBasedLinks().map((link) => (
-          <Link key={link.to} to={link.to} className="hover:text-blue-500">{link.label}</Link>
+          <Link key={link.to} to={link.to} className="hover:text-blue-500">
+            {link.label}
+          </Link>
         ))}
 
         {!user ? (
-          <Link to="/auth" className="hover:text-blue-500">Login/Signup</Link>
+          <Link to="/auth" className="hover:text-blue-500">
+            Login/Signup
+          </Link>
         ) : (
           <div className="relative">
             <button
@@ -209,7 +218,9 @@ function Navbar() {
         <Link to="/cart" className="relative flex items-center hover:text-blue-600">
           <ShoppingCart className="w-6 h-6" />
           {cartCount > 0 && (
-            <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">{cartCount}</span>
+            <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">
+              {cartCount}
+            </span>
           )}
         </Link>
       </div>
@@ -233,7 +244,6 @@ function Navbar() {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md flex flex-col items-center py-4 space-y-3 md:hidden">
-          {/* Mobile Category Dropdown */}
           <div className="relative w-full flex justify-center">
             <button
               onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
@@ -269,7 +279,9 @@ function Navbar() {
           ))}
 
           {!user ? (
-            <Link to="/auth" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>Login/Signup</Link>
+            <Link to="/auth" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>
+              Login/Signup
+            </Link>
           ) : (
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2">
@@ -280,13 +292,20 @@ function Navbar() {
                     {getInitials(user.name)}
                   </div>
                 )}
-                <span className="text-sm text-gray-600">{user.name} ({user.role})</span>
+                <span className="text-sm text-gray-600">
+                  {user.name} ({user.role})
+                </span>
               </div>
               {getDropdownLinks().map((link) => (
-                <Link key={link.to} to={link.to} className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>{link.label}</Link>
+                <Link key={link.to} to={link.to} className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>
+                  {link.label}
+                </Link>
               ))}
               <button
-                onClick={() => { handleLogout(); setMenuOpen(false); }}
+                onClick={() => {
+                  handleLogout();
+                  setMenuOpen(false);
+                }}
                 className="flex items-center gap-1 text-red-600 hover:text-red-700"
               >
                 <LogOut className="w-4 h-4" />
