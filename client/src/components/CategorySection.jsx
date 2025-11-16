@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 
 const CategorySection = () => {
   const categories = [
-    { name: "Pottery", img: "https://i.imgur.com/I2y6iWq.jpg" },
-    { name: "Jewelry", img: "https://i.imgur.com/mVcwZz5.jpg" },
-    { name: "Textiles", img: "https://i.imgur.com/bX4EHEv.jpg" },
-    { name: "Home Decor", img: "https://i.imgur.com/xU4h5sR.jpg" },
-  ];
+  { name: "Pottery", img: "https://imgs.search.brave.com/l82D086_Ply30MUaWSUjcUMrFOf5AMICcVz0tz9N3yw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTQx/Mzc0NDk5Ni9waG90/by9wb3R0ZXJ5LW1h/a2VyLWFydGlzdC1v/ci1kZXNpZ25lci1t/b2xkaW5nLWFuZC1i/dWlsZGluZy1hbi1v/YmplY3Qtd2l0aC1j/bGF5LWF0LWEtZmFj/dG9yeS1zdHVkaW8u/anBnP3M9NjEyeDYx/MiZ3PTAmaz0yMCZj/PWQ3b1JrY2RUQS05/TEZPZ3RFMEY2UzBN/dzJraFRtR1lKdGZ3/ZTR3WDgwN2c9" },
+  { name: "Jewelry", img: "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3" },
+  { name: "Textiles", img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246" },
+  { name: "Home Decor", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c" },
+];
 
   return (
     <section className="py-16 bg-gradient-to-b from-blue-50 to-white px-6 md:px-12 lg:px-20">

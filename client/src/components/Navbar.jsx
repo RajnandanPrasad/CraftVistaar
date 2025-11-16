@@ -14,7 +14,6 @@ function Navbar() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [categories, setCategories] = useState([]);
 
-  // ✅ include clearCart to reset cart on logout
   const { getTotalItems, clearCart } = useCart();
   const cartCount = getTotalItems();
 
@@ -57,7 +56,6 @@ function Navbar() {
     fetchCategories();
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (categoryRef.current && !categoryRef.current.contains(e.target)) {
@@ -68,10 +66,9 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Fix: Clear cart on logout
   const handleLogout = () => {
-    logout(); // remove user token/session
-    clearCart(); // clear cart items from context/localStorage
+    logout();
+    clearCart();
     toast.success("Logged out successfully");
     navigate("/");
     setDropdownOpen(false);
@@ -105,7 +102,7 @@ function Navbar() {
 
   return (
     <nav className="w-full flex items-center justify-between px-6 py-3 bg-white shadow-md sticky top-0 z-50">
-      {/* Left - Logo and Desktop Category */}
+      {/* LEFT - LOGO ONLY */}
       <div className="flex items-center gap-2">
         <Link to="/" className="flex items-center gap-2">
           <img
@@ -114,12 +111,21 @@ function Navbar() {
             className="h-14 w-14 rounded-full object-cover shadow-lg hover:scale-110 transition-all duration-200"
           />
         </Link>
+      </div>
 
-        {/* Desktop Category Dropdown */}
-        <div className="relative hidden md:block" ref={categoryRef}>
+      {/* MIDDLE - SEARCH BAR */}
+      <div className="flex-1 mx-6 max-w-lg hidden md:block">
+        <SearchBar />
+      </div>
+
+      {/* RIGHT SIDE */}
+      <div className="hidden md:flex items-center gap-6 text-gray-700 font-medium">
+        
+        {/* ⭐ CATEGORY BUTTON (Moved here before Login/Signup) */}
+        <div className="relative" ref={categoryRef}>
           <button
             onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-            className={`text-2xl font-bold flex items-center gap-1 transition-colors duration-200 ${
+            className={`text-lg font-semibold flex items-center gap-1 transition-colors duration-200 ${
               categoryDropdownOpen ? "text-blue-600" : "text-gray-800 hover:text-blue-500"
             }`}
           >
@@ -132,7 +138,7 @@ function Navbar() {
           </button>
 
           {categoryDropdownOpen && (
-            <div className="absolute top-full left-0 mt-2 w-60 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden transition-all duration-300 animate-fadeIn">
+            <div className="absolute right-0 mt-2 w-60 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden transition-all duration-300">
               {categories.length > 0 ? (
                 categories.map((category) => (
                   <button
@@ -152,21 +158,15 @@ function Navbar() {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Middle - Search */}
-      <div className="flex-1 mx-6 max-w-lg hidden md:block">
-        <SearchBar />
-      </div>
-
-      {/* Right - Links */}
-      <div className="hidden md:flex items-center gap-6 text-gray-700 font-medium">
+        {/* NAV LINKS */}
         {getRoleBasedLinks().map((link) => (
           <Link key={link.to} to={link.to} className="hover:text-blue-500">
             {link.label}
           </Link>
         ))}
 
+        {/* LOGIN / USER DROPDOWN */}
         {!user ? (
           <Link to="/auth" className="hover:text-blue-500">
             Login/Signup
@@ -214,7 +214,7 @@ function Navbar() {
           </div>
         )}
 
-        {/* Cart */}
+        {/* CART */}
         <Link to="/cart" className="relative flex items-center hover:text-blue-600">
           <ShoppingCart className="w-6 h-6" />
           {cartCount > 0 && (
@@ -225,7 +225,7 @@ function Navbar() {
         </Link>
       </div>
 
-      {/* Hamburger - Mobile */}
+      {/* MOBILE HAMBURGER */}
       <button
         onClick={() => setMenuOpen(!menuOpen)}
         className="md:hidden flex items-center justify-center text-gray-700"
@@ -241,29 +241,38 @@ function Navbar() {
         )}
       </button>
 
-      {/* Mobile Menu */}
+      {/* MOBILE MENU (unchanged) */}
       {menuOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md flex flex-col items-center py-4 space-y-3 md:hidden">
-          <div className="relative w-full flex justify-center">
+          <div className="w-11/12">
+            <SearchBar />
+          </div>
+
+          <div className="w-full flex flex-col items-center">
+            {/* Mobile category */}
             <button
               onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-              className="text-xl font-bold text-gray-800 hover:text-blue-500 flex items-center gap-1"
+              className="text-lg font-bold text-gray-800 flex items-center gap-1"
             >
               Category
-              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${categoryDropdownOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-300 ${
+                  categoryDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
             </button>
 
             {categoryDropdownOpen && (
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-60 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+              <div className="mt-2 w-60 bg-white border border-gray-200 rounded-xl shadow-md">
                 {categories.map((category) => (
                   <button
                     key={category}
                     onClick={() => {
                       navigate(`/category/${encodeURIComponent(category)}`);
-                      setCategoryDropdownOpen(false);
                       setMenuOpen(false);
+                      setCategoryDropdownOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-150"
+                    className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50 text-gray-700"
                   >
                     {category}
                   </button>
@@ -273,54 +282,45 @@ function Navbar() {
           </div>
 
           {getRoleBasedLinks().map((link) => (
-            <Link key={link.to} to={link.to} className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>
+            <Link key={link.to} to={link.to} onClick={() => setMenuOpen(false)} className="hover:text-blue-500">
               {link.label}
             </Link>
           ))}
 
           {!user ? (
-            <Link to="/auth" className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>
+            <Link to="/auth" onClick={() => setMenuOpen(false)} className="hover:text-blue-500">
               Login/Signup
             </Link>
           ) : (
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2">
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    {getInitials(user.name)}
-                  </div>
-                )}
-                <span className="text-sm text-gray-600">
-                  {user.name} ({user.role})
-                </span>
+                <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm">
+                  {getInitials(user.name)}
+                </div>
+                <span>{user.name}</span>
               </div>
+
               {getDropdownLinks().map((link) => (
-                <Link key={link.to} to={link.to} className="hover:text-blue-500" onClick={() => setMenuOpen(false)}>
+                <Link key={link.to} to={link.to} onClick={() => setMenuOpen(false)}>
                   {link.label}
                 </Link>
               ))}
+
               <button
                 onClick={() => {
                   handleLogout();
                   setMenuOpen(false);
                 }}
-                className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                className="text-red-600 flex items-center gap-1"
               >
-                <LogOut className="w-4 h-4" />
-                Logout
+                <LogOut className="w-4 h-4" /> Logout
               </button>
             </div>
           )}
 
-          {/* Cart */}
-          <Link to="/cart" onClick={() => setMenuOpen(false)} className="flex items-center gap-1 text-gray-700 hover:text-blue-600">
-            <ShoppingCart className="w-5 h-5" /> <span>Cart ({cartCount})</span>
+          <Link to="/cart" onClick={() => setMenuOpen(false)} className="flex items-center gap-1">
+            <ShoppingCart className="w-5 h-5" /> Cart ({cartCount})
           </Link>
-
-          <div className="w-11/12 border-t border-gray-200 my-2"></div>
-          <div className="w-11/12"><SearchBar /></div>
         </div>
       )}
     </nav>
@@ -328,3 +328,4 @@ function Navbar() {
 }
 
 export default Navbar;
+

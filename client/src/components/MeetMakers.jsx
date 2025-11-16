@@ -5,17 +5,17 @@ const MeetMakers = () => {
     {
       name: "Asha Kumari",
       skill: "Terracotta Pottery",
-      img: "https://i.imgur.com/ZWlO8Oy.jpg",
+      img: "https://imgs.search.brave.com/mjq64vSQ7JkJFdC_RuHmcAlkFWTL4m_WgSpLwpV_9Xg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wcmlu/Y2Vzc2RpeWFrdW1h/cmlmb3VuZGF0aW9u/Lm9yZy9zdG9yaWVz/Lzc1MjYyOC5wbmc",
     },
     {
       name: "Ravi Verma",
       skill: "Wood Carving",
-      img: "https://i.imgur.com/dS9dNQK.jpg",
+      img: "https://imgs.search.brave.com/vF6IRPRJS04XAXYkQqCVyZUbpp5GkV8GM6SosSVHIDk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/d29vZGVuY2Fydmlu/Z3MuaW4vY2RuL3No/b3AvYXJ0aWNsZXMv/c2VuZ290dHV2ZWxf/d29ya2luZ19wdGlj/dGVzLndlYnA_dj0x/NzQwODEzNDQ1Jndp/ZHRoPTEwODA",
     },
     {
       name: "Pooja Das",
       skill: "Handwoven Fabric",
-      img: "https://i.imgur.com/mV5bKfY.jpg",
+      img: "https://imgs.search.brave.com/zC2Z-VILGU0NvcgxhyZL4kCoUkKmRVrCEvqoFF_WkeM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTUw/MDYwMjY4MC9waG90/by9wb3J0cmFpdC1v/Zi1zZW5pb3Itd29t/YW4tcHJheWluZy10/by1nb2QtYXQtaG9t/ZS5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9R09kZHVpTUg1/Y1VNMVVueDBfcWhK/WWYzakY1aXpnOGEy/dXNiSG1TdVJ5ND0",
     },
   ];
 
@@ -35,11 +35,15 @@ const MeetMakers = () => {
               key={artist.name}
               className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
             >
-              <img
-                src={artist.img}
-                alt={artist.name}
-                className="rounded-full w-32 h-32 mx-auto object-cover border-4 border-blue-300"
-              />
+              {/* FIXED IMAGE WRAPPER */}
+              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-blue-300 flex items-center justify-center">
+                <img
+                  src={artist.img}
+                  alt={artist.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
               <h3 className="text-xl font-bold text-gray-800 mt-4">
                 {artist.name}
               </h3>
