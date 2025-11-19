@@ -10,8 +10,10 @@ import BuyPage from "./pages/BuyPage";
 import Cart from "./pages/Cart";
 import Auth from "./pages/Auth";
 import ProductDetails from "./pages/ProductDetails";
-import SellerDashboard from "./pages/SellerDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
+import SellerDashboard from "./pages/seller/SellerDashboard";
+import SellerProfile from "./pages/seller/SellerProfile";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProfile from "./pages/admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
@@ -39,10 +41,42 @@ export default function App() {
                 }
               />
               <Route
+                path="/seller/dashboard"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <SellerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/seller/profile"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <SellerProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/admin"
                 element={
                   <ProtectedRoute requiredRole="admin">
                     <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/profile"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminProfile />
                   </ProtectedRoute>
                 }
               />
