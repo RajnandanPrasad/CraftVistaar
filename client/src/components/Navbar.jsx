@@ -114,7 +114,7 @@ function Navbar() {
       </div>
 
       {/* MIDDLE - SEARCH BAR */}
-      <div className="flex-1 mx-6 max-w-lg hidden md:block">
+      <div className="flex-1 mx-2 max-w-xs sm:max-w-sm md:max-w-lg ">
         <SearchBar />
       </div>
 
@@ -244,9 +244,7 @@ function Navbar() {
       {/* MOBILE MENU (unchanged) */}
       {menuOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md flex flex-col items-center py-4 space-y-3 md:hidden">
-          <div className="w-11/12">
-            <SearchBar />
-          </div>
+          
 
           <div className="w-full flex flex-col items-center">
             {/* Mobile category */}

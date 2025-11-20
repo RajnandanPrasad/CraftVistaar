@@ -1,4 +1,3 @@
-// server/routes/adminRoutes.js
 const express = require("express");
 const router = express.Router();
 
@@ -8,6 +7,12 @@ const User = require("../models/User");
 
 const { authMiddleware, roleCheck } = require("../middleware/authMiddleware");
 const adminMiddleware = roleCheck(["admin"]);
+
+const { getAdminDashboardStats, getAdminProfile } = require("../controllers/adminController");
+
+// --- New dashboard and profile routes ---
+router.get('/dashboard', authMiddleware, adminMiddleware, getAdminDashboardStats);
+router.get('/profile', authMiddleware, adminMiddleware, getAdminProfile);
 
 // --- Get all sellers ---
 router.get('/sellers', authMiddleware, adminMiddleware, async (req, res) => {
@@ -84,12 +89,6 @@ router.delete('/users/:id', authMiddleware, adminMiddleware, async (req, res) =>
     res.status(500).json({ msg: 'Server error' });
   }
 });
-
-
-
-
-
-
 
 // --- Get all orders (admin) ---
 // NOTE: Per your choice (Option A) we return compact order objects for UI
