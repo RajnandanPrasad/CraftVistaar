@@ -1,11 +1,14 @@
+require('dotenv').config();
 const express = require('express');
-const cors = require("cors");  // ✅ Add this
+const cors = require("cors");  
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
-require('dotenv').config();
+const paymentRoutes = require('./routes/paymentRoutes');
+
+
 
 const app = express();
 connectDB();
@@ -21,8 +24,7 @@ app.use("/api/auth", require('./routes/authRoutes'));
 app.use("/api/admin", require('./routes/adminRoutes'));
 app.use("/api/products", require('./routes/productRoutes'));
 app.use("/api/orders", require('./routes/orderRoutes'));
-
-
+app.use("/api/payment", paymentRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

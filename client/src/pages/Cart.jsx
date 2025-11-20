@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { getCurrentUser } from "../api/auth";
+import { createRazorpayOrder } from "../api/payment";
 import toast from "react-hot-toast";
 
 export default function Cart() {
@@ -12,12 +13,20 @@ export default function Cart() {
 
   const totalPrice = getTotalPrice();
 
-  const handleQuantityChange = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    updateQuantity(id, newQuantity);
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
   };
 
-  const handlePlaceOrder = () => {
+
+  const handlePlaceOrder = async () => {
     if (!user) {
       toast.error("Please login to place an order");
       navigate("/login");
@@ -31,31 +40,69 @@ export default function Cart() {
 
     setLoading(true);
 
-    // Create order object
-    const order = {
-      id: Date.now().toString(),
-      userId: user.id,
-      items: cartItems,
-      total: totalPrice,
-      date: new Date().toISOString(),
-      status: "placed",
-    };
+    try {
+      // 1️⃣ Create Razorpay order on backend
+      const res = await createRazorpayOrder(totalPrice);
+      const orderId = res.orderId;
 
-    // Save order to localStorage
-    const existingOrders = JSON.parse(localStorage.getItem("craftkart_orders") || "[]");
-    existingOrders.push(order);
-    localStorage.setItem("craftkart_orders", JSON.stringify(existingOrders));
+      if (!orderId) {
+        toast.error("Failed to create payment order");
+        setLoading(false);
+        return;
+      }
 
-    // Clear cart
-    clearCart();
+      // 2️⃣ Load Razorpay checkout script
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        toast.error("Failed to load Razorpay SDK");
+        setLoading(false);
+        return;
+      }
 
-    toast.success("Order placed successfully!");
+      // 3️⃣ Open Razorpay popup
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: totalPrice * 100,
+        currency: "INR",
+        name: "CraftKart",
+        description: "Order Payment",
+        order_id: orderId,
+
+        handler: function (response) {
+          // On successful payment
+          toast.success("Payment Successful!");
+
+          const order = {
+            id: Date.now().toString(),
+            userId: user.id,
+            items: cartItems,
+            total: totalPrice,
+            date: new Date().toISOString(),
+            status: "paid",
+            paymentId: response.razorpay_payment_id,
+          };
+
+          const existingOrders = JSON.parse(localStorage.getItem("craftkart_orders") || "[]");
+          existingOrders.push(order);
+          localStorage.setItem("craftkart_orders", JSON.stringify(existingOrders));
+
+          clearCart();
+          navigate("/products");
+        },
+
+        theme: {
+          color: "#4f46e5",
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (err) {
+      console.log(err);
+      toast.error("Payment failed");
+    }
+
     setLoading(false);
-
-    // Navigate to products or show success message
-    setTimeout(() => {
-      navigate("/products");
-    }, 2000);
   };
 
   return (
