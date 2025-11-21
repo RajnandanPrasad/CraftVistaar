@@ -13,7 +13,7 @@ connectDB();
 
 app.use(cors({
   origin: "http://localhost:5173",
-  "https://craft-vistaar.vercel.app/",
+  "https://craft-vistaar.vercel.app",
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
