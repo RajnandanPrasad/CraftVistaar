@@ -19,9 +19,9 @@ export default function SellerAddProduct() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token"); // JWT from login
-      await axios.post("http://localhost:5000/api/products", formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(`${import.meta.env.VITE_API_BASE}/api/products`, formData, {
+  headers: { Authorization: `Bearer ${token}` }
+});
       toast.success("Product uploaded! Waiting for admin approval.");
       setFormData({ title: "", description: "", price: "", category: "", images: [] });
     } catch (err) {

@@ -8,6 +8,8 @@ const SearchBar = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const API_BASE = import.meta.env.VITE_API_BASE;
+
   useEffect(() => {
     const delay = setTimeout(async () => {
       if (!value.trim()) {
@@ -17,9 +19,12 @@ const SearchBar = () => {
 
       try {
         setLoading(true);
+
+        // ✅ FIXED: Remove localhost & use env variable
         const { data } = await axios.get(
-          `http://localhost:5000/api/products/search?q=${encodeURIComponent(value)}`
+          `${API_BASE}/api/products/search?q=${encodeURIComponent(value)}`
         );
+
         setSuggestions(data.products || []);
       } catch (error) {
         console.error("Error fetching data:", error);

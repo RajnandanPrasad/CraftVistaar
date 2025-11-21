@@ -19,8 +19,8 @@ export default function Products() {
 
         if (searchQuery) {
           const { data } = await axios.get(
-            `http://localhost:5000/api/products/search?q=${encodeURIComponent(searchQuery)}`
-          );
+  `${import.meta.env.VITE_API_BASE}/api/products/search?q=${encodeURIComponent(searchQuery)}`
+);
           setProducts(data.products || []);
         } else {
           const allProducts = await getPublicProducts();
