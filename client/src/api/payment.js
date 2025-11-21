@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL: `${import.meta.env.VITE_API_BASE}/api`,
 });
 
-// If you want to send token (optional)
+
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("craftkart_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
