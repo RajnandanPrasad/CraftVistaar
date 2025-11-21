@@ -12,8 +12,9 @@ const app = express();
 connectDB();
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173",
   "https://craft-vistaar.vercel.app",
+  ],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
