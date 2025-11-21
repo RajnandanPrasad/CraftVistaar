@@ -1,14 +1,12 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require("cors");  
+const cors = require("cors");
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
-
-
 
 const app = express();
 connectDB();
@@ -20,25 +18,22 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use("/api/auth", require('./routes/authRoutes'));
-app.use("/api/admin", require('./routes/adminRoutes'));
-app.use("/api/products", require('./routes/productRoutes'));
-app.use("/api/orders", require('./routes/orderRoutes'));
-<<<<<<< HEAD
+
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
 app.use("/api/payment", paymentRoutes);
-=======
-app.use("/api/seller", require('./routes/sellerRoutes'));
-
-
->>>>>>> 7f5374da1b26129dddfb538115da3abcedae41f4
+app.use("/api/seller", require('./routes/sellerRoutes'));  // added
 
 // Error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ msg: 'Something went wrong!' });
+  console.error(err.stack);
+  res.status(500).json({ msg: 'Something went wrong!' });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
