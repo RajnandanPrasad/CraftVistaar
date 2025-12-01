@@ -6,6 +6,7 @@ import { getPublicProducts } from "../api/products";
 import axios from "axios";
 
 export default function Products() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { categoryName } = useParams();
