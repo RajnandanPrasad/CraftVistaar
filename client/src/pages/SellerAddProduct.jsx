@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import toast from "react-hot-toast";
 
 export default function SellerAddProduct() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -22,11 +24,11 @@ export default function SellerAddProduct() {
       await axios.post(`${import.meta.env.VITE_API_BASE}/api/products`, formData, {
   headers: { Authorization: `Bearer ${token}` }
 });
-      toast.success("Product uploaded! Waiting for admin approval.");
+      toast.success(t("productUploadedWaitingApproval"));
       setFormData({ title: "", description: "", price: "", category: "", images: [] });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to upload product.");
+      toast.error(t("failedToUploadProduct"));
     }
   };
 

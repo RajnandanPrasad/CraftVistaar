@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ProductCard from "../components/ProductCard";
 import { getPublicProducts } from "../api/products";
 import axios from "axios";
@@ -46,7 +47,7 @@ export default function Products() {
   }, [categoryName, location.search]);
 
   if (loading)
-    return <p className="text-center py-10 text-lg">Loading products...</p>;
+    return <p className="text-center py-10 text-lg">{t("loadingProducts")}</p>;
 
   const params = new URLSearchParams(location.search);
   const searchQuery = params.get("query");
@@ -79,8 +80,8 @@ export default function Products() {
         <div className="text-center py-10">
           <p className="text-gray-600 text-lg">
             {searchQuery
-              ? "No products found matching your search."
-              : "No products available at the moment."}
+              ? t("noProductsFound")
+              : t("noProductsAvailable")}
           </p>
         </div>
       )}

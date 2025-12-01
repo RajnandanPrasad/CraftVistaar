@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import SearchBar from "./SearchBar";
 import logo from "../assets/logo.webp";
 import { ShoppingCart, LogOut, ChevronDown } from "lucide-react";
@@ -9,6 +10,7 @@ import { getCategories } from "../api/products";
 import toast from "react-hot-toast";
 
 function Navbar() {
+  const { t, i18n } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
@@ -20,6 +22,10 @@ function Navbar() {
   const user = getCurrentUser();
   const navigate = useNavigate();
   const categoryRef = useRef(null);
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -69,7 +75,7 @@ function Navbar() {
   const handleLogout = () => {
     logout();
     clearCart();
-    toast.success("Logged out successfully");
+    toast.success(t("loggedOutSuccessfully"));
     navigate("/");
     setDropdownOpen(false);
   };
@@ -78,21 +84,21 @@ function Navbar() {
     if (!user) return [];
 
     const links = [
-      { to: "/", label: "Home" },
-      { to: "/products", label: "Products" },
+      { to: "/", label: t("home") },
+      { to: "/products", label: t("products") },
     ];
 
-    if (user.role === "seller") links.push({ to: "/seller", label: "Seller Dashboard" });
-    if (user.role === "admin") links.push({ to: "/admin", label: "Admin Dashboard" });
+    if (user.role === "seller") links.push({ to: "/seller", label: t("sellerDashboard") });
+    if (user.role === "admin") links.push({ to: "/admin", label: t("adminDashboard") });
 
     return links;
   };
 
   const getDropdownLinks = () => {
-    const links = [{ to: "/profile", label: "Profile" }];
-    if (user.role === "customer") links.push({ to: "/orders", label: "My Orders" });
-    if (user.role === "seller") links.push({ to: "/seller", label: "Add Product" });
-    if (user.role === "admin") links.push({ to: "/admin", label: "Dashboard" });
+    const links = [{ to: "/profile", label: t("profile") }];
+    if (user.role === "customer") links.push({ to: "/orders", label: t("myOrders") });
+    if (user.role === "seller") links.push({ to: "/seller", label: t("addProduct") });
+    if (user.role === "admin") links.push({ to: "/admin", label: t("dashboard") });
     return links;
   };
 
@@ -129,7 +135,7 @@ function Navbar() {
               categoryDropdownOpen ? "text-blue-600" : "text-gray-800 hover:text-blue-500"
             }`}
           >
-            Category
+            {t("category")}
             <ChevronDown
               className={`w-5 h-5 transition-transform duration-300 ${
                 categoryDropdownOpen ? "rotate-180 text-blue-600" : ""
@@ -153,7 +159,7 @@ function Navbar() {
                   </button>
                 ))
               ) : (
-                <div className="px-4 py-2 text-sm text-gray-500">No categories available</div>
+                <div className="px-4 py-2 text-sm text-gray-500">{t("noCategoriesAvailable")}</div>
               )}
             </div>
           )}
@@ -169,7 +175,7 @@ function Navbar() {
         {/* LOGIN / USER DROPDOWN */}
         {!user ? (
           <Link to="/auth" className="hover:text-blue-500">
-            Login/Signup
+            {t("loginSignup")}
           </Link>
         ) : (
           <div className="relative">
@@ -207,12 +213,28 @@ function Navbar() {
                   onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                 >
-                  Logout
+                  {t("logout")}
                 </button>
               </div>
             )}
           </div>
         )}
+
+        {/* LANGUAGE SWITCHER */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => changeLanguage('en')}
+            className={`px-2 py-1 text-sm rounded ${i18n.language === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => changeLanguage('hi')}
+            className={`px-2 py-1 text-sm rounded ${i18n.language === 'hi' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
+            HI
+          </button>
+        </div>
 
         {/* CART */}
         <Link to="/cart" className="relative flex items-center hover:text-blue-600">
@@ -252,7 +274,7 @@ function Navbar() {
               onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
               className="text-lg font-bold text-gray-800 flex items-center gap-1"
             >
-              Category
+              {t("category")}
               <ChevronDown
                 className={`w-4 h-4 transition-transform duration-300 ${
                   categoryDropdownOpen ? "rotate-180" : ""
@@ -287,7 +309,7 @@ function Navbar() {
 
           {!user ? (
             <Link to="/auth" onClick={() => setMenuOpen(false)} className="hover:text-blue-500">
-              Login/Signup
+              {t("loginSignup")}
             </Link>
           ) : (
             <div className="flex flex-col items-center gap-2">
@@ -311,13 +333,13 @@ function Navbar() {
                 }}
                 className="text-red-600 flex items-center gap-1"
               >
-                <LogOut className="w-4 h-4" /> Logout
+                <LogOut className="w-4 h-4" /> {t("logout")}
               </button>
             </div>
           )}
 
           <Link to="/cart" onClick={() => setMenuOpen(false)} className="flex items-center gap-1">
-            <ShoppingCart className="w-5 h-5" /> Cart ({cartCount})
+            <ShoppingCart className="w-5 h-5" /> {t("cart")} ({cartCount})
           </Link>
         </div>
       )}

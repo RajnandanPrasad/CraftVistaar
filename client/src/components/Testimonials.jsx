@@ -1,15 +1,17 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const Testimonials = () => {
+  const { t } = useTranslation();
   const reviews = [
     {
-      name: "Riya",
-      msg: "Beautiful pottery! Fast delivery and amazing quality.",
+      name: t("riya"),
+      msg: t("riyaTestimonial"),
     },
-    { name: "Amit", msg: "Loved the handmade jewelry. Perfect for gifting!" },
+    { name: t("amit"), msg: t("amitTestimonial") },
     {
-      name: "Sneha",
-      msg: "CraftKart connects me with authentic Indian crafts ❤️",
+      name: t("sneha"),
+      msg: t("snehaTestimonial"),
     },
   ];
 
