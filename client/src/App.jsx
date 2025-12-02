@@ -12,6 +12,8 @@ import Auth from "./pages/Auth";
 import ProductDetails from "./pages/ProductDetails";
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import SellerProfile from "./pages/seller/SellerProfile";
+import LearnPage from "./pages/seller/LearnPage";
+import LearnVideos from "./pages/seller/LearnVideos";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProfile from "./pages/admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -53,6 +55,22 @@ export default function App() {
                 element={
                   <ProtectedRoute requiredRole="seller">
                     <SellerProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/seller/learn"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <LearnPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/seller/learn/:categoryId"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <LearnVideos />
                   </ProtectedRoute>
                 }
               />
