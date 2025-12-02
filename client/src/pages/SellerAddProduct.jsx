@@ -3,6 +3,19 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+const allowedCategories = [
+  "Clothing",
+  "Electronics",
+  "Grocery",
+  "Fitness",
+  "Toys",
+  "Home Decor",
+  "Footwear",
+  "Beauty",
+  "Kitchen",
+  "Accessories",
+];
+
 export default function SellerAddProduct() {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
@@ -20,7 +33,7 @@ export default function SellerAddProduct() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token"); // JWT from login
+      const token = localStorage.getItem("craftkart_token"); // JWT from login
       await axios.post(`${import.meta.env.VITE_API_BASE}/api/products`, formData, {
   headers: { Authorization: `Bearer ${token}` }
 });

@@ -12,6 +12,8 @@ import Auth from "./pages/Auth";
 import ProductDetails from "./pages/ProductDetails";
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import SellerProfile from "./pages/seller/SellerProfile";
+import SellerProducts from "./pages/seller/SellerProducts";
+import SellerOrders from "./pages/seller/SellerOrders";
 import LearnPage from "./pages/seller/LearnPage";
 import LearnVideos from "./pages/seller/LearnVideos";
 import AdminDashboard from "./pages/admin/AdminDashboard";

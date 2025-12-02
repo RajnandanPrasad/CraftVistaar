@@ -26,4 +26,28 @@ const getSellerProfile = async (req, res) => {
   }
 };
 
-module.exports = { getSellerDashboardStats, getSellerProfile };
+const getSellerProducts = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const products = await Product.find({ sellerId }).sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
+    console.error('Error fetching seller products:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+const getSellerOrders = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const products = await Product.find({ sellerId }).select('_id');
+    const productIds = products.map(p => p._id);
+    const orders = await Order.find({ "items.product": { $in: productIds } }).populate('customer', 'name email').populate('items.product', 'title price').sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    console.error('Error fetching seller orders:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+module.exports = { getSellerDashboardStats, getSellerProfile, getSellerProducts, getSellerOrders };

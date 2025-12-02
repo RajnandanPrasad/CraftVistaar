@@ -18,15 +18,21 @@ export const getProducts = async () => {
 };
 
 // Get public approved products
-export const getPublicProducts = async () => {
+export const fetchProducts = async () => {
   const res = await API.get("/products/public");
   return res.data;
 };
 
 // Get categories
-export const getCategories = async () => {
+export const fetchCategories = async () => {
   const res = await API.get("/products/categories/distinct");
   return res.data;
+};
+
+// Search products
+export const searchProducts = async (query) => {
+  const res = await API.get(`/products/search?q=${encodeURIComponent(query)}`);
+  return res.data.products;
 };
 
 

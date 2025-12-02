@@ -6,7 +6,7 @@ import logo from "../assets/logo.webp";
 import { ShoppingCart, LogOut, ChevronDown } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { logout, getCurrentUser } from "../api/auth";
-import { getCategories } from "../api/products";
+import { fetchCategories } from "../api/products";
 import toast from "react-hot-toast";
 
 function Navbar() {
@@ -28,10 +28,10 @@ function Navbar() {
   };
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const loadCategories = async () => {
       try {
-        const cats = await getCategories();
-        if (cats.length > 0) {
+        const cats = await fetchCategories();
+        if (cats && cats.length > 0) {
           setCategories(cats);
         } else {
           setCategories([
@@ -59,7 +59,7 @@ function Navbar() {
         ]);
       }
     };
-    fetchCategories();
+    loadCategories();
   }, []);
 
   useEffect(() => {
@@ -284,19 +284,23 @@ function Navbar() {
 
             {categoryDropdownOpen && (
               <div className="mt-2 w-60 bg-white border border-gray-200 rounded-xl shadow-md">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => {
-                      navigate(`/category/${encodeURIComponent(category)}`);
-                      setMenuOpen(false);
-                      setCategoryDropdownOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50 text-gray-700"
-                  >
-                    {category}
-                  </button>
-                ))}
+                {categories.length > 0 ? (
+                  categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        navigate(`/category/${encodeURIComponent(category)}`);
+                        setMenuOpen(false);
+                        setCategoryDropdownOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50 text-gray-700"
+                    >
+                      {category}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-sm text-gray-500">{t("noCategoriesAvailable")}</div>
+                )}
               </div>
             )}
           </div>

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ProductCard from "../components/ProductCard";
-import { getPublicProducts } from "../api/products";
-import axios from "axios";
+import { fetchProducts, searchProducts } from "../api/products";
 
 export default function Products() {
   const { t } = useTranslation();
@@ -13,29 +12,28 @@ export default function Products() {
   const location = useLocation();
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const loadProducts = async () => {
       try {
         setLoading(true);
         const params = new URLSearchParams(location.search);
         const searchQuery = params.get("query");
 
+        let data;
         if (searchQuery) {
-          const { data } = await axios.get(
-  `${import.meta.env.VITE_API_BASE}/api/products/search?q=${encodeURIComponent(searchQuery)}`
-);
-          setProducts(data.products || []);
+          data = await searchProducts(searchQuery);
         } else {
-          const allProducts = await getPublicProducts();
-          let filtered = allProducts;
-          if (categoryName) {
-            filtered = allProducts.filter(
-              (p) =>
-                p.category?.toLowerCase() ===
-                decodeURIComponent(categoryName).toLowerCase()
-            );
-          }
-          setProducts(filtered);
+          data = await fetchProducts();
         }
+
+        let filtered = data;
+        if (categoryName) {
+          filtered = data.filter(
+            (p) =>
+              p.category?.toLowerCase() ===
+              decodeURIComponent(categoryName).toLowerCase()
+          );
+        }
+        setProducts(filtered);
       } catch (err) {
         console.error("Failed to fetch products:", err);
         setProducts([]);
@@ -44,7 +42,7 @@ export default function Products() {
       }
     };
 
-    fetchProducts();
+    loadProducts();
   }, [categoryName, location.search]);
 
   if (loading)
