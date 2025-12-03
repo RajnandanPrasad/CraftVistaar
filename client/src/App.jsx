@@ -77,6 +77,22 @@ export default function App() {
                 }
               />
               <Route
+                path="/seller/products"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <SellerProducts />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/seller/orders"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <SellerOrders />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/admin"
                 element={
                   <ProtectedRoute requiredRole="admin">
