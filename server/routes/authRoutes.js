@@ -10,7 +10,7 @@ const router = express.Router();
 
 // ---------- MULTER (file upload setup) ----------
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, "uploads/"),
+    destination: (req, file, cb) => cb(null, "uploads/kyc/"),
     filename: (req, file, cb) =>
         cb(null, Date.now() + "-" + file.originalname)
 });
@@ -65,9 +65,25 @@ router.post(
             const passwordHash = await bcrypt.hash(password, 10);
 
             // Files
-            const aadhaar = req.files?.aadhaar?.[0]?.filename || null;
-            const workImages =
-                req.files?.workImages?.map((file) => file.filename) || [];
+            const aadhaarFile = req.files?.aadhaar?.[0];
+            const workImageFiles = req.files?.workImages || [];
+
+            // Build documents array for sellers
+            const documents = [];
+            if (role === "seller") {
+                if (aadhaarFile) {
+                    documents.push({
+                        type: "Aadhaar",
+                        url: `/uploads/kyc/${aadhaarFile.filename}`
+                    });
+                }
+                workImageFiles.forEach((file, index) => {
+                    documents.push({
+                        type: "Work Image",
+                        url: `/uploads/kyc/${file.filename}`
+                    });
+                });
+            }
 
             // New user object
             const newUser = new User({
@@ -85,8 +101,7 @@ router.post(
                 bankName,
 
                 // Seller documents
-                aadhaar,
-                workImages,
+                documents,
             });
 
             await newUser.save();
@@ -115,8 +130,7 @@ router.post(
                     accountNumber,
                     ifsc,
                     bankName,
-                    aadhaar,
-                    workImages,
+                    documents: newUser.documents,
                 }
             });
         } catch (err) {
@@ -167,8 +181,7 @@ router.post("/login", [
                 accountNumber: user.accountNumber,
                 ifsc: user.ifsc,
                 bankName: user.bankName,
-                aadhaar: user.aadhaar,
-                workImages: user.workImages,
+                documents: user.documents,
             }
         });
 
