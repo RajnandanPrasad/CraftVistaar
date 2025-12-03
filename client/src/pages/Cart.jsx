@@ -4,8 +4,10 @@ import { useCart } from "../context/CartContext";
 import { getCurrentUser } from "../api/auth";
 import { createRazorpayOrder } from "../api/payment";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 export default function Cart() {
+  const { t } = useTranslation();
   const { cartItems, updateQuantity, removeFromCart, clearCart, getTotalPrice } = useCart();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -28,13 +30,13 @@ export default function Cart() {
 
   const handlePlaceOrder = async () => {
     if (!user) {
-      toast.error("Please login to place an order");
+      toast.error(t("pleaseLoginToPlaceOrder"));
       navigate("/login");
       return;
     }
 
     if (cartItems.length === 0) {
-      toast.error("Your cart is empty");
+      toast.error(t("cartIsEmpty"));
       return;
     }
 
@@ -46,7 +48,7 @@ export default function Cart() {
       const orderId = res.orderId;
 
       if (!orderId) {
-        toast.error("Failed to create payment order");
+        toast.error(t("failedToCreatePaymentOrder"));
         setLoading(false);
         return;
       }
@@ -54,7 +56,7 @@ export default function Cart() {
       // 2️⃣ Load Razorpay checkout script
       const loaded = await loadRazorpayScript();
       if (!loaded) {
-        toast.error("Failed to load Razorpay SDK");
+        toast.error(t("failedToLoadRazorpay"));
         setLoading(false);
         return;
       }
@@ -70,7 +72,7 @@ export default function Cart() {
 
         handler: function (response) {
           // On successful payment
-          toast.success("Payment Successful!");
+          toast.success(t("paymentSuccessful"));
 
           const order = {
             id: Date.now().toString(),
@@ -99,7 +101,7 @@ export default function Cart() {
       paymentObject.open();
     } catch (err) {
       console.log(err);
-      toast.error("Payment failed");
+      toast.error(t("paymentFailed"));
     }
 
     setLoading(false);
@@ -107,13 +109,13 @@ export default function Cart() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">🛒 Your Cart</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">{t("yourCart")}</h2>
 
       {cartItems.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-gray-600 text-lg">Your cart is empty.</p>
+          <p className="text-gray-600 text-lg">{t("cartEmpty")}</p>
           <Link to="/products" className="text-blue-600 underline mt-4 block">
-            Browse Products
+            {t("browseProducts")}
           </Link>
         </div>
       ) : (
@@ -135,21 +137,21 @@ export default function Cart() {
                   />
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800">{item.title}</h3>
-                    <p className="text-gray-600">₹{item.price} each</p>
+                    <p className="text-gray-600">₹{item.price} {t("each")}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       className="bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300"
                     >
                       -
                     </button>
                     <span className="font-semibold">{item.quantity}</span>
                     <button
-                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       className="bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300"
                     >
                       +
@@ -164,7 +166,7 @@ export default function Cart() {
                     onClick={() => removeFromCart(item.id)}
                     className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
                   >
-                    Remove
+                    {t("remove")}
                   </button>
                 </div>
               </div>
@@ -172,13 +174,13 @@ export default function Cart() {
           </div>
 
           <div className="mt-6 flex justify-between items-center bg-white p-4 rounded-lg shadow">
-            <h3 className="text-xl font-bold text-gray-800">Total: ₹{totalPrice}</h3>
+            <h3 className="text-xl font-bold text-gray-800">{t("total")}: ₹{totalPrice}</h3>
             <div className="space-x-4">
               <button
                 onClick={clearCart}
                 className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
               >
-                Clear Cart
+                {t("clearCart")}
               </button>
               <button
                 onClick={handlePlaceOrder}
@@ -187,7 +189,7 @@ export default function Cart() {
                   loading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
-                {loading ? "Placing Order..." : "Place Order"}
+                {loading ? t("placingOrder") : t("placeOrder")}
               </button>
             </div>
           </div>

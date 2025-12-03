@@ -1,10 +1,12 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function AdminStatsCards({ stats }) {
+  const { t } = useTranslation();
   const cards = [
-    { title: "Total Users", value: stats.totalUsers, icon: "👥" },
-    { title: "Total Products", value: stats.totalProducts, icon: "📦" },
-    { title: "Total Orders", value: stats.totalOrders, icon: "📋" },
+    { title: t("totalUsers"), value: stats.totalUsers, icon: "👥" },
+    { title: t("totalProducts"), value: stats.totalProducts, icon: "📦" },
+    { title: t("totalOrders"), value: stats.totalOrders, icon: "📋" },
   ];
 
   return (

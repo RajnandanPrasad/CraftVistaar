@@ -1,8 +1,23 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+const allowedCategories = [
+  "Clothing",
+  "Electronics",
+  "Grocery",
+  "Fitness",
+  "Toys",
+  "Home Decor",
+  "Footwear",
+  "Beauty",
+  "Kitchen",
+  "Accessories",
+];
+
 export default function SellerAddProduct() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -18,15 +33,15 @@ export default function SellerAddProduct() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token"); // JWT from login
+      const token = localStorage.getItem("craftkart_token"); // JWT from login
       await axios.post(`${import.meta.env.VITE_API_BASE}/api/products`, formData, {
   headers: { Authorization: `Bearer ${token}` }
 });
-      toast.success("Product uploaded! Waiting for admin approval.");
+      toast.success(t("productUploadedWaitingApproval"));
       setFormData({ title: "", description: "", price: "", category: "", images: [] });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to upload product.");
+      toast.error(t("failedToUploadProduct"));
     }
   };
 

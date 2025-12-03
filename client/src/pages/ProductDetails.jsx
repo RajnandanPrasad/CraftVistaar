@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getPublicProductById } from "../api/products";
 import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
 
 export default function ProductDetails() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -20,11 +22,11 @@ export default function ProductDetails() {
         if (data) {
           setProduct(data);
         } else {
-          setError("Product Not Found");
+          setError(t("productNotFound"));
         }
       } catch (err) {
         console.error("Error fetching product:", err);
-        setError("Failed to load product");
+        setError(t("failedToLoadProduct"));
       } finally {
         setLoading(false);
       }
@@ -36,14 +38,14 @@ export default function ProductDetails() {
   const handleAddToCart = () => {
     if (product) {
       addToCart(product);
-      toast.success(`${product.title} added to cart!`);
+      toast.success(t("addedToCart"));
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl">{t("loading")}</div>
       </div>
     );
   }
@@ -71,7 +73,7 @@ export default function ProductDetails() {
           onClick={() => navigate("/products")}
           className="mb-6 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
         >
-          Back to Products
+          {t("backToProducts")}
         </button>
         <div className="bg-white shadow-lg rounded-2xl p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -96,7 +98,7 @@ export default function ProductDetails() {
                   onClick={handleAddToCart}
                   className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
                 >
-                  Add to Cart
+                  {t("addToCart")}
                 </button>
               </div>
             </div>

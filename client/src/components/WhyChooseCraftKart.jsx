@@ -1,19 +1,21 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const WhyChooseCraftKart = () => {
+  const { t } = useTranslation();
   const reasons = [
     {
-      title: "Authentic Handcrafted Goods",
-      desc: "Every item is made by skilled artisans using sustainable materials.",
+      title: t("authenticHandcraftedGoods"),
+      desc: t("authenticHandcraftedGoodsDesc"),
     },
     {
-      title: "Support Local Artisans",
-      desc: "Your purchase directly empowers rural and small-scale artisans.",
+      title: t("supportLocalArtisans"),
+      desc: t("supportLocalArtisansDesc"),
     },
     {
-      title: "Eco-Friendly Packaging",
-      desc: "We ensure minimal waste with biodegradable and recycled materials.",
+      title: t("ecoFriendlyPackaging"),
+      desc: t("ecoFriendlyPackagingDesc"),
     },
   ];
 
