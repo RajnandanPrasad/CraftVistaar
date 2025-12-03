@@ -36,9 +36,8 @@ export default function SellerDashboard() {
   // Load seller's products
   const loadProducts = async () => {
     try {
-      const res = await API.get("/products");
-      const sellerProducts = res.data.filter((p) => p.sellerId._id === user.id);
-      setProducts(sellerProducts);
+      const res = await API.get("/seller/products");
+      setProducts(res.data);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load products");
@@ -68,15 +67,24 @@ export default function SellerDashboard() {
           price: parseFloat(formData.price),
         });
         toast.success("Product updated successfully!");
+        resetForm();
       } else {
         await API.post("/products", {
           ...formData,
           price: parseFloat(formData.price),
         });
         toast.success("Product added successfully!");
+        // Reset form data but keep form open for adding another product
+        setFormData({
+          title: "",
+          description: "",
+          price: "",
+          category: "",
+          images: [""],
+        });
+        setEditingProduct(null);
       }
       loadProducts();
-      resetForm();
     } catch (err) {
       console.error(err.response?.data || err);
       toast.error("Failed to save product. Make sure your seller is verified.");
