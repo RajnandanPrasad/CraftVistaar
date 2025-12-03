@@ -29,6 +29,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/seller", require('./routes/sellerRoutes'));  // added
+app.use("/uploads", express.static("uploads"));
 
 // Error handler
 app.use((err, req, res, next) => {

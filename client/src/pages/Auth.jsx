@@ -5,12 +5,24 @@ import toast, { Toaster } from "react-hot-toast";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     role: "customer",
+
+    // seller fields
+    mobile: "",
+    workAddress: "",
+    accountNumber: "",
+    ifsc: "",
+    bankName: "",
   });
+
+  const [aadhaar, setAadhaar] = useState(null);
+  const [workImages, setWorkImages] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -26,30 +38,41 @@ export default function Auth() {
       if (isLogin) {
         const { user } = await login({ email: formData.email, password: formData.password });
         toast.success("Login successful! Redirecting...");
+
         setTimeout(() => {
           if (user.role === "customer") navigate("/products");
-          else if (user.role === "seller") navigate("/seller");
-          else if (user.role === "admin") navigate("/admin");
+          if (user.role === "seller") navigate("/seller");
+          if (user.role === "admin") navigate("/admin");
         }, 1500);
+
       } else {
         if (formData.password.length < 6) {
           toast.error("Password must be at least 6 characters long");
           setLoading(false);
           return;
         }
-        const { user } = await register(formData);
+
+        const data = new FormData();
+        Object.keys(formData).forEach((key) => data.append(key, formData[key]));
+
+        if (aadhaar) data.append("aadhaar", aadhaar);
+        workImages.forEach((img) => data.append("workImages", img));
+
+        const { user } = await register(data, true);
+
         toast.success("Signup successful!");
         if (user.role === "seller") {
           toast("Awaiting admin verification to add products.", { duration: 4000 });
         }
+
         setTimeout(() => {
           if (user.role === "customer") navigate("/products");
-          else if (user.role === "seller") navigate("/seller");
-          else if (user.role === "admin") navigate("/admin");
+          if (user.role === "seller") navigate("/seller");
+          if (user.role === "admin") navigate("/admin");
         }, 2000);
       }
     } catch (error) {
-      toast.error(error.message || `${isLogin ? "Login" : "Signup"} failed. Try again.`);
+      toast.error(error.message || `${isLogin ? "Login" : "Signup"} failed.`);
     } finally {
       setLoading(false);
     }
@@ -57,7 +80,7 @@ export default function Auth() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-50 to-blue-100">
-      <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="top-center" />
 
       <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md transition-transform hover:scale-[1.01]">
         <div className="flex justify-center mb-6">
@@ -80,80 +103,154 @@ export default function Auth() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* NAME (signup only) */}
           {!isLogin && (
             <div>
-              <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">
-                Full Name
-              </label>
+              <label className="block text-gray-700 font-semibold mb-2">Full Name</label>
               <input
                 name="name"
-                id="name"
                 type="text"
-                placeholder="Enter your name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition-all"
-                required={!isLogin}
+                className="w-full px-4 py-2 border rounded-lg"
+                required
               />
             </div>
           )}
 
+          {/* EMAIL */}
           <div>
-            <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">
-              Email Address
-            </label>
+            <label className="block text-gray-700 font-semibold mb-2">Email Address</label>
             <input
               name="email"
-              id="email"
               type="email"
-              placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition-all"
+              className="w-full px-4 py-2 border rounded-lg"
               required
             />
           </div>
 
+          {/* PASSWORD */}
           <div>
-            <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">
-              Password
-            </label>
+            <label className="block text-gray-700 font-semibold mb-2">Password</label>
             <input
               name="password"
-              id="password"
               type="password"
-              placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition-all"
+              className="w-full px-4 py-2 border rounded-lg"
               required
             />
           </div>
 
+          {/* ROLE (signup only) */}
           {!isLogin && (
             <div>
-              <label htmlFor="role" className="block text-gray-700 font-semibold mb-2">
-                Select Role
-              </label>
+              <label className="block text-gray-700 font-semibold mb-2">Select Role</label>
               <select
                 name="role"
-                id="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition-all"
+                className="w-full px-4 py-2 border rounded-lg"
               >
                 <option value="customer">Customer</option>
                 <option value="seller">Seller</option>
-                <option value="admin">Admin</option>
               </select>
             </div>
           )}
 
+          {/* ⭐ SELLER ONLY FIELDS */}
+          {!isLogin && formData.role === "seller" && (
+            <div className="space-y-4 bg-blue-50 p-4 border rounded-lg">
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">Mobile Number</label>
+                <input
+                  name="mobile"
+                  value={formData.mobile}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">Work Address</label>
+                <input
+                  name="workAddress"
+                  value={formData.workAddress}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">Upload Aadhaar Card</label>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setAadhaar(e.target.files[0])}
+                  className="w-full"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">Upload Work Images (1–3)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => setWorkImages([...e.target.files])}
+                  className="w-full"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">Account Number</label>
+                <input
+                  name="accountNumber"
+                  value={formData.accountNumber}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">IFSC Code</label>
+                <input
+                  name="ifsc"
+                  value={formData.ifsc}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">Bank Name</label>
+                <input
+                  name="bankName"
+                  value={formData.bankName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          {/* SUBMIT BUTTON */}
           <button
             type="submit"
             disabled={loading}
             className={`w-full text-white font-semibold py-2 rounded-lg transition-all ${
-              loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              loading ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
             {loading ? (isLogin ? "Logging in..." : "Signing up...") : (isLogin ? "Login" : "Signup")}
@@ -162,10 +259,7 @@ export default function Auth() {
 
         <p className="text-center text-gray-600 mt-6">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-blue-600 hover:underline font-medium"
-          >
+          <button onClick={() => setIsLogin(!isLogin)} className="text-blue-600 hover:underline font-medium">
             {isLogin ? "Sign up here" : "Login here"}
           </button>
         </p>

@@ -1,0 +1,11 @@
+[33mffb09ab[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: reset: moving to origin/main
+[33mffb09ab[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{1}: pull origin main: Fast-forward
+[33m022edc2[m HEAD@{2}: commit: frontend env updated
+[33m7806b79[m HEAD@{3}: commit: added raj cors link in server
+[33me15a001[m HEAD@{4}: commit: Your latest commit
+[33m6ac2340[m HEAD@{5}: reset: moving to HEAD~1
+[33m0dbce5c[m HEAD@{6}: reset: moving to origin/main
+[33m6ac2340[m HEAD@{7}: reset: moving to HEAD~1
+[33m0dbce5c[m HEAD@{8}: commit: Resolved merge conflict in server.js
+[33m6ac2340[m HEAD@{9}: pull origin main: Fast-forward
+[33mb5646e9[m HEAD@{10}: reset: moving to HEAD
