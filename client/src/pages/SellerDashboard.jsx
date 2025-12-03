@@ -13,6 +13,7 @@ const categories = [
   "Footwear",
   "Beauty",
   "Kitchen",
+  "Pickles",
   "Accessories",
 ];
 
