@@ -12,6 +12,9 @@ export default function AdminSidebar() {
     { to: "/admin/users", label: t("users") },
     { to: "/admin/products", label: t("products") },
     { to: "/admin/orders", label: t("orders") },
+
+    // ✅ NEW SELLER ANALYTICS LINK
+    { to: "/admin/seller-analytics", label: "Seller Analytics" },
   ];
 
   return (
