@@ -32,12 +32,14 @@ export default function MyOrders() {
     });
   };
 
-  const statusSteps = ["pending", "packed", "shipped", "delivered"];
+  // ⭐ ADDED "accepted" HERE
+  const statusSteps = ["pending", "accepted", "packed", "shipped", "delivered"];
 
   const getStatusIndex = (status) => statusSteps.indexOf(status.toLowerCase());
 
   const getStatusColor = (status) => {
     const s = status.toLowerCase();
+    if (s === "accepted") return "bg-purple-100 text-purple-700"; // ⭐ NEW COLOR
     if (s === "delivered") return "bg-green-100 text-green-700";
     if (s === "shipped") return "bg-blue-100 text-blue-700";
     if (s === "packed") return "bg-yellow-100 text-yellow-700";
@@ -100,7 +102,7 @@ export default function MyOrders() {
                 </span>
               </div>
 
-              {/* Order Progress Timeline */}
+              {/* Timeline */}
               <div className="flex items-center justify-between px-8 py-6">
                 {statusSteps.map((step, idx) => (
                   <div key={idx} className="flex flex-col items-center">
@@ -112,9 +114,10 @@ export default function MyOrders() {
                       }`}
                     >
                       {idx === 0 && "🛒"}
-                      {idx === 1 && "📦"}
-                      {idx === 2 && "🚚"}
-                      {idx === 3 && "📬"}
+                      {idx === 1 && "✅"} 
+                      {idx === 2 && "📦"}
+                      {idx === 3 && "🚚"}
+                      {idx === 4 && "📬"}
                     </div>
                     <p
                       className={`mt-2 text-sm font-medium ${
@@ -134,22 +137,22 @@ export default function MyOrders() {
                     key={item._id}
                     className="flex items-center gap-4 p-4 border rounded-xl bg-gray-50 hover:bg-gray-100 transition"
                   >
-                  <img
-  src={
-    item.product?.images?.[0] ||
-    item.images?.[0] ||
-    "https://via.placeholder.com/80"
-  }
-  alt={item.product?.title}
-  className="w-20 h-20 object-cover rounded-lg border"
-  onError={(e) => (e.target.src = "/assets/logo.webp")}
-/>
-
+                    <img
+                      src={item.product?.images?.[0] || "/assets/logo.webp"}
+                      alt={item.product?.title}
+                      className="w-20 h-20 object-cover rounded-lg border"
+                      onError={(e) => (e.target.src = "/assets/logo.webp")}
+                    />
 
                     <div className="flex-1">
                       <p className="font-semibold text-lg">
                         {item.product?.title}
                       </p>
+
+                      <p className="text-gray-500 text-sm">
+                        Sold by: {item.product?.sellerId?.name || "Unknown Seller"}
+                      </p>
+
                       <p className="text-gray-600">Qty: {item.quantity}</p>
                     </div>
 
@@ -160,7 +163,7 @@ export default function MyOrders() {
                 ))}
               </div>
 
-              {/* Expand Button */}
+              {/* Expand */}
               <button
                 onClick={() =>
                   setExpandedOrderId(expandedOrderId === id ? null : id)
@@ -174,7 +177,6 @@ export default function MyOrders() {
               {expandedOrderId === id && (
                 <div className="p-6 bg-gray-50 border-t">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-
                     <div>
                       <h3 className="text-gray-700 font-semibold mb-2">
                         Shipping Address

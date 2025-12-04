@@ -123,10 +123,22 @@ router.get('/my-orders', authMiddleware, async (req, res) => {
       return res.status(403).json({ msg: 'Only customers can view their orders' });
 
     const orders = await Order.find({ customer: req.user._id })
-      .populate('items.product', 'title price')
+      .populate({
+        path: "items.product",
+        select: "title price images sellerId",
+        populate: {
+          path: "sellerId",
+          select: "name"
+        }
+      })
+      .populate({
+        path: "items.seller",
+        select: "name"
+      })
       .sort({ createdAt: -1 });
 
     res.json(orders);
+
   } catch (err) {
     console.error('Error fetching my orders:', err);
     res.status(500).json({ msg: 'Server error' });
