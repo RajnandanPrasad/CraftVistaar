@@ -117,7 +117,12 @@ router.patch('/users/:id/verify', authMiddleware, adminMiddleware, async (req, r
     user.verifiedByEmail = req.user.email;
     user.verifiedAt = new Date();
 
-    await user.save();
+    try {
+      await user.save();
+    } catch (saveErr) {
+      console.error('Error saving user:', saveErr);
+      return res.status(500).json({ msg: 'Error saving user verification', error: saveErr.message });
+    }
 
     // TODO: Implement notification (email/SMS) if notify === true
     if (notify) {

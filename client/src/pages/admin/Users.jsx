@@ -292,18 +292,54 @@ export default function AdminUsers() {
                   <FileText size={16} /> Documents
                 </h3>
 
-                {selectedUser.documents?.length > 0 ? (
-                  selectedUser.documents.map((doc, i) => (
-                    <a
-                      key={i}
-                      href={doc.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block text-blue-400 underline text-sm mt-1"
-                    >
-                      {doc.type || `Document ${i + 1}`}
-                    </a>
-                  ))
+                {selectedUser.documents ? (
+                  <div className="space-y-2">
+                    {selectedUser.documents.aadhaarUrl && (
+                      <a
+                        href={selectedUser.documents.aadhaarUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-blue-400 underline text-sm"
+                      >
+                        Aadhaar Card
+                      </a>
+                    )}
+                    {selectedUser.documents.panUrl && (
+                      <a
+                        href={selectedUser.documents.panUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-blue-400 underline text-sm"
+                      >
+                        PAN Card
+                      </a>
+                    )}
+                    {selectedUser.documents.gstUrl && (
+                      <a
+                        href={selectedUser.documents.gstUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-blue-400 underline text-sm"
+                      >
+                        GST Certificate
+                      </a>
+                    )}
+                    {selectedUser.documents.shopLicenseUrl && (
+                      <a
+                        href={selectedUser.documents.shopLicenseUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-blue-400 underline text-sm"
+                      >
+                        Shop License
+                      </a>
+                    )}
+                    {selectedUser.documents.extraDocs && selectedUser.documents.extraDocs.length > 0 && (
+                      <p className="text-sm text-slate-300">
+                        Extra Documents: {selectedUser.documents.extraDocs.length} uploaded
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <p className="text-sm text-slate-400">No documents uploaded</p>
                 )}

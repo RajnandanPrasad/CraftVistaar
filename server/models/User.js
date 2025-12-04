@@ -35,10 +35,13 @@ const userSchema = new mongoose.Schema(
     },
 
     // ⭐ Seller documents
-    documents: [{
-      type: { type: String, required: true }, // e.g., "Aadhaar", "Work Image"
-      url: { type: String, required: true } // file path
-    }],
+    documents: {
+      aadhaarUrl: String,
+      panUrl: String,
+      gstUrl: String,
+      shopLicenseUrl: String,
+      extraDocs: [String]
+    },
 
     // ⭐ Verification audit
     verificationReason: { type: String }, // for rejection
@@ -47,7 +50,7 @@ const userSchema = new mongoose.Schema(
     verifiedByEmail: { type: String },
     verifiedAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 module.exports = mongoose.model("User", userSchema);
