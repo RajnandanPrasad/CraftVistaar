@@ -4,7 +4,7 @@ import Checkout from "./pages/Checkout";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast";
-
+import MyOrders from "./pages/MyOrders";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
@@ -42,9 +42,19 @@ export default function App() {
               <Route path="/category/:categoryName" element={<Products />} />
               <Route path="/products/search" element={<Products />} />
 
-              {/* ✅ Your Checkout + Order Confirm Routes */}
+              {/* ✅ Checkout + Order Confirm Routes */}
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order/confirm" element={<OrderConfirm />} />
+
+              {/* ⭐️ ADDED MY ORDERS ROUTE (DO NOT MODIFY ANYTHING ELSE) */}
+              <Route
+                path="/orders"
+                element={
+                  <ProtectedRoute requiredRole="customer">
+                    <MyOrders />
+                  </ProtectedRoute>
+                }
+              />
 
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
