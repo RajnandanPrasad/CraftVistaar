@@ -94,16 +94,39 @@ function Navbar() {
     return links;
   };
 
+  // ✅ YAHI NAYA PART HAI – ROLE BASED PROFILE LINKS
   const getDropdownLinks = () => {
-    const links = [{ to: "/profile", label: t("profile") }];
-    if (user.role === "customer") links.push({ to: "/orders", label: t("myOrders") });
-    if (user.role === "seller") links.push({ to: "/seller", label: t("addProduct") });
-    if (user.role === "admin") links.push({ to: "/admin", label: t("dashboard") });
+    if (!user) return [];
+
+    let links = [];
+
+    // CUSTOMER
+    if (user.role === "customer") {
+      links.push({ to: "/profile", label: t("profile") });
+      links.push({ to: "/orders", label: t("myOrders") });
+    }
+
+    // SELLER
+    if (user.role === "seller") {
+      links.push({ to: "/seller/profile", label: t("profile") });
+      links.push({ to: "/seller", label: t("addProduct") });
+    }
+
+    // ADMIN
+    if (user.role === "admin") {
+      links.push({ to: "/admin/profile", label: t("profile") });
+      links.push({ to: "/admin", label: t("dashboard") });
+    }
+
     return links;
   };
 
   const getInitials = (name) => {
-    return name.split(" ").map((n) => n[0]).join("").toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
   return (
@@ -126,7 +149,6 @@ function Navbar() {
 
       {/* RIGHT SIDE */}
       <div className="hidden md:flex items-center gap-6 text-gray-700 font-medium">
-        
         {/* ⭐ CATEGORY BUTTON (Moved here before Login/Signup) */}
         <div className="relative" ref={categoryRef}>
           <button
@@ -223,14 +245,18 @@ function Navbar() {
         {/* LANGUAGE SWITCHER */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => changeLanguage('en')}
-            className={`px-2 py-1 text-sm rounded ${i18n.language === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+            onClick={() => changeLanguage("en")}
+            className={`px-2 py-1 text-sm rounded ${
+              i18n.language === "en" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+            }`}
           >
             EN
           </button>
           <button
-            onClick={() => changeLanguage('hi')}
-            className={`px-2 py-1 text-sm rounded ${i18n.language === 'hi' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+            onClick={() => changeLanguage("hi")}
+            className={`px-2 py-1 text-sm rounded ${
+              i18n.language === "hi" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+            }`}
           >
             HI
           </button>
@@ -253,21 +279,31 @@ function Navbar() {
         className="md:hidden flex items-center justify-center text-gray-700"
       >
         {menuOpen ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-7 w-7"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-7 w-7"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         )}
       </button>
 
-      {/* MOBILE MENU (unchanged) */}
+      {/* MOBILE MENU */}
       {menuOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md flex flex-col items-center py-4 space-y-3 md:hidden">
-          
-
           <div className="w-full flex flex-col items-center">
             {/* Mobile category */}
             <button
@@ -352,4 +388,3 @@ function Navbar() {
 }
 
 export default Navbar;
-

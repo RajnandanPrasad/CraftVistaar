@@ -14,6 +14,7 @@ import BuyPage from "./pages/BuyPage";
 import Cart from "./pages/Cart";
 import Auth from "./pages/Auth";
 import ProductDetails from "./pages/ProductDetails";
+import Profile from "./pages/Profile";
 
 // ✅ Admin Pages
 import SellerAnalytics from "./pages/admin/SellerAnalytics";
@@ -56,6 +57,16 @@ export default function App() {
                 element={
                   <ProtectedRoute requiredRole="customer">
                     <MyOrders />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Customer Profile Route */}
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute requiredRole="customer">
+                    <Profile />
                   </ProtectedRoute>
                 }
               />
