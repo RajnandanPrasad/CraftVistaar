@@ -76,6 +76,66 @@ router.delete('/products/:id/reject', authMiddleware, adminMiddleware, async (re
   }
 });
 
+// --- Get all users (admin) ---
+router.get('/users', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const users = await User.find().select('-passwordHash');
+    res.json({ users });
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// --- Verify seller (approve/reject) ---
+router.patch('/users/:id/verify', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { status, reason, notify } = req.body;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ msg: 'Invalid status' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user || user.role !== 'seller') {
+      return res.status(404).json({ msg: 'Seller not found' });
+    }
+
+    if (status === 'rejected' && !reason) {
+      return res.status(400).json({ msg: 'Rejection reason is required' });
+    }
+
+    // Update verification status
+    user.sellerVerificationStatus = status;
+    if (status === 'rejected') {
+      user.verificationReason = reason;
+    }
+
+    // Audit trail
+    user.verifiedBy = req.user._id;
+    user.verifiedByName = req.user.name;
+    user.verifiedByEmail = req.user.email;
+    user.verifiedAt = new Date();
+
+    try {
+      await user.save();
+    } catch (saveErr) {
+      console.error('Error saving user:', saveErr);
+      return res.status(500).json({ msg: 'Error saving user verification', error: saveErr.message });
+    }
+
+    // TODO: Implement notification (email/SMS) if notify === true
+    if (notify) {
+      // Stub: console.log(`Notification sent to ${user.email} for ${status}`);
+    }
+
+    res.json({ msg: 'Verification updated successfully', user });
+  } catch (err) {
+    console.error('Error verifying seller:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // --- Delete a user permanently (admin only) ---
 router.delete('/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {

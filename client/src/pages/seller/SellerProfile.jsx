@@ -11,6 +11,13 @@ export default function SellerProfile() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "" });
+  const [documents, setDocuments] = useState({
+    aadhaar: null,
+    pan: null,
+    gst: null,
+    shopLicense: null,
+    extraDocs: [],
+  });
 
   const user = getCurrentUser();
 
@@ -94,6 +101,43 @@ export default function SellerProfile() {
     }
   };
 
+  // ✅ Handle Document File Selection
+  const handleDocumentChange = (e, field) => {
+    const files = e.target.files;
+    if (field === 'extraDocs') {
+      setDocuments(prev => ({ ...prev, extraDocs: Array.from(files) }));
+    } else {
+      setDocuments(prev => ({ ...prev, [field]: files[0] }));
+    }
+  };
+
+  // ✅ Upload Documents
+  const handleDocumentUpload = async () => {
+    try {
+      const formData = new FormData();
+
+      if (documents.aadhaar) formData.append('aadhaar', documents.aadhaar);
+      if (documents.pan) formData.append('pan', documents.pan);
+      if (documents.gst) formData.append('gst', documents.gst);
+      if (documents.shopLicense) formData.append('shopLicense', documents.shopLicense);
+      documents.extraDocs.forEach(file => formData.append('extraDocs', file));
+
+      toast.loading("Uploading documents...");
+
+      const res = await API.put("/seller/upload-documents", formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      toast.dismiss();
+      toast.success("Documents uploaded successfully!");
+      setProfile(prev => ({ ...prev, documents: res.data.documents }));
+      setDocuments({ aadhaar: null, pan: null, gst: null, shopLicense: null, extraDocs: [] });
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Document upload failed!");
+    }
+  };
+
   if (!user || user.role !== "seller") {
     return <div className="p-10 text-center">Access Denied</div>;
   }
@@ -157,6 +201,66 @@ export default function SellerProfile() {
               >
                 Edit Profile
               </motion.button>
+
+              {/* Document Upload Section */}
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-3">Upload Documents</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Aadhaar Card</label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.pdf"
+                      onChange={(e) => handleDocumentChange(e, 'aadhaar')}
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">PAN Card</label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.pdf"
+                      onChange={(e) => handleDocumentChange(e, 'pan')}
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">GST Certificate</label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.pdf"
+                      onChange={(e) => handleDocumentChange(e, 'gst')}
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Shop License</label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.pdf"
+                      onChange={(e) => handleDocumentChange(e, 'shopLicense')}
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Extra Documents (max 5)</label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.pdf"
+                      multiple
+                      onChange={(e) => handleDocumentChange(e, 'extraDocs')}
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    onClick={handleDocumentUpload}
+                    className="w-full bg-green-600 text-white py-2 rounded-lg"
+                  >
+                    Upload Documents
+                  </motion.button>
+                </div>
+              </div>
             </div>
           )}
         </motion.div>

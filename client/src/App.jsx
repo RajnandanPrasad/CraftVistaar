@@ -4,22 +4,28 @@ import Checkout from "./pages/Checkout";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast";
+
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import BuyPage from "./pages/BuyPage";
 import Cart from "./pages/Cart";
 import Auth from "./pages/Auth";
 import ProductDetails from "./pages/ProductDetails";
+
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import SellerProfile from "./pages/seller/SellerProfile";
 import SellerProducts from "./pages/seller/SellerProducts";
 import SellerOrders from "./pages/seller/SellerOrders";
 import LearnPage from "./pages/seller/LearnPage";
 import LearnVideos from "./pages/seller/LearnVideos";
+
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProfile from "./pages/admin/AdminProfile";
+import AdminUsers from "./pages/admin/Users";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
@@ -30,15 +36,22 @@ export default function App() {
           <Navbar />
           <main className="flex-grow">
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
               <Route path="/category/:categoryName" element={<Products />} />
               <Route path="/products/search" element={<Products />} />
+
+              {/* ✅ Your Checkout + Order Confirm Routes */}
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order/confirm" element={<OrderConfirm />} />
+
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/buy" element={<BuyPage />} />
+
+              {/* Seller Routes */}
               <Route
                 path="/seller"
                 element={
@@ -95,6 +108,8 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Admin Routes */}
               <Route
                 path="/admin"
                 element={
@@ -119,8 +134,19 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Admin - Users Page */}
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminUsers />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </main>
+
           <Footer />
           <Toaster position="top-center" reverseOrder={false} />
         </div>

@@ -13,13 +13,9 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Register (supports FormData + file uploads)
-export const register = async (formData) => {
-  const res = await API.post("/auth/register", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+// Register (JSON only, no files)
+export const register = async (userData) => {
+  const res = await API.post("/auth/register", userData);
 
   localStorage.setItem("craftkart_token", res.data.token);
   localStorage.setItem("craftkart_currentUser", JSON.stringify(res.data.user));

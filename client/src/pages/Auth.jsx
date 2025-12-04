@@ -21,8 +21,7 @@ export default function Auth() {
     bankName: "",
   });
 
-  const [aadhaar, setAadhaar] = useState(null);
-  const [workImages, setWorkImages] = useState([]);
+
 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -53,17 +52,12 @@ export default function Auth() {
           return;
         }
 
-        const data = new FormData();
-        Object.keys(formData).forEach((key) => data.append(key, formData[key]));
-
-        if (aadhaar) data.append("aadhaar", aadhaar);
-        workImages.forEach((img) => data.append("workImages", img));
-
-        const { user } = await register(data, true);
+        // Send only JSON data (no files) to register
+        const { user } = await register(formData);
 
         toast.success("Signup successful!");
         if (user.role === "seller") {
-          toast("Awaiting admin verification to add products.", { duration: 4000 });
+          toast("Please upload your documents to complete verification.", { duration: 4000 });
         }
 
         setTimeout(() => {
@@ -188,28 +182,7 @@ export default function Auth() {
                 />
               </div>
 
-              <div>
-                <label className="block text-gray-700 font-semibold mb-1">Upload Aadhaar Card</label>
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={(e) => setAadhaar(e.target.files[0])}
-                  className="w-full"
-                  required
-                />
-              </div>
 
-              <div>
-                <label className="block text-gray-700 font-semibold mb-1">Upload Work Images (1–3)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => setWorkImages([...e.target.files])}
-                  className="w-full"
-                  required
-                />
-              </div>
 
               <div>
                 <label className="block text-gray-700 font-semibold mb-1">Account Number</label>

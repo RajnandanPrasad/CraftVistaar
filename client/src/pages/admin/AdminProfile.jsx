@@ -16,26 +16,65 @@ export default function AdminProfile() {
   }, [user]);
 
   if (!user || user.role !== "admin") {
-    return <div className="p-6 text-center">Access denied. Admin account required.</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-100 to-red-200">
+        <div className="backdrop-blur-xl bg-white/70 p-10 rounded-2xl shadow-2xl text-center">
+          <h2 className="text-3xl font-bold text-red-600">🚫 Access Denied</h2>
+          <p className="text-gray-700 mt-2 text-lg">
+            Admin account required
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       <AdminSidebar />
-      <div className="flex-1 p-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">Admin Profile</h2>
-        <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Name</label>
-            <p className="mt-1 text-lg">{profile.name}</p>
+
+      <div className="flex-1 flex items-center justify-center p-10">
+        <div className="relative w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-xl shadow-2xl border border-white/30 p-10 transition-all duration-500 hover:scale-[1.02]">
+
+          {/* Floating Glow */}
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-400 opacity-30 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-400 opacity-30 rounded-full blur-3xl"></div>
+
+          {/* Header */}
+          <div className="flex items-center gap-6 border-b border-gray-200 pb-6 mb-8">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-600 to-pink-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+              {profile?.name?.charAt(0) || "A"}
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-pink-600 text-transparent bg-clip-text">
+                {profile.name || "Admin"}
+              </h2>
+              <p className="text-sm text-gray-600 tracking-wide">
+                System Administrator
+              </p>
+            </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <p className="mt-1 text-lg">{profile.email}</p>
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Role</label>
-            <p className="mt-1 text-lg">{profile.role}</p>
+
+          {/* Info Cards */}
+          <div className="space-y-5">
+
+            <div className="flex justify-between items-center bg-white/80 p-5 rounded-xl shadow hover:shadow-md transition">
+              <span className="text-gray-600 font-semibold">👤 Name</span>
+              <span className="text-gray-900 font-bold">{profile.name}</span>
+            </div>
+
+            <div className="flex justify-between items-center bg-white/80 p-5 rounded-xl shadow hover:shadow-md transition">
+              <span className="text-gray-600 font-semibold">📧 Email</span>
+              <span className="text-gray-900 font-bold">{profile.email}</span>
+            </div>
+
+            <div className="flex justify-between items-center bg-white/80 p-5 rounded-xl shadow hover:shadow-md transition">
+              <span className="text-gray-600 font-semibold">🛡 Role</span>
+              <span className="px-5 py-1.5 text-sm rounded-full font-bold bg-gradient-to-r from-indigo-600 to-pink-600 text-white shadow">
+                {profile.role}
+              </span>
+            </div>
+
           </div>
         </div>
       </div>

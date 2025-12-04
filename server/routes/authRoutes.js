@@ -4,27 +4,13 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { authMiddleware } = require('../middleware/authMiddleware');
-const multer = require("multer");
 
 const router = express.Router();
-
-// ---------- MULTER (file upload setup) ----------
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, "uploads/"),
-    filename: (req, file, cb) =>
-        cb(null, Date.now() + "-" + file.originalname)
-});
-
-const upload = multer({ storage });
 
 
 // ---------- REGISTER ----------
 router.post(
     "/register",
-    upload.fields([
-        { name: "aadhaar", maxCount: 1 },
-        { name: "workImages", maxCount: 5 }
-    ]),
     [
         body("name").notEmpty().withMessage("Name is required"),
         body("email").isEmail().withMessage("Valid email is required"),
@@ -64,11 +50,6 @@ router.post(
             // Hash password
             const passwordHash = await bcrypt.hash(password, 10);
 
-            // Files
-            const aadhaar = req.files?.aadhaar?.[0]?.filename || null;
-            const workImages =
-                req.files?.workImages?.map((file) => file.filename) || [];
-
             // New user object
             const newUser = new User({
                 name,
@@ -84,9 +65,8 @@ router.post(
                 ifsc,
                 bankName,
 
-                // Seller documents
-                aadhaar,
-                workImages,
+                // Seller documents (empty at signup, uploaded later)
+                documents: [],
             });
 
             await newUser.save();
@@ -115,8 +95,7 @@ router.post(
                     accountNumber,
                     ifsc,
                     bankName,
-                    aadhaar,
-                    workImages,
+                    documents: newUser.documents,
                 }
             });
         } catch (err) {
@@ -167,8 +146,7 @@ router.post("/login", [
                 accountNumber: user.accountNumber,
                 ifsc: user.ifsc,
                 bankName: user.bankName,
-                aadhaar: user.aadhaar,
-                workImages: user.workImages,
+                documents: user.documents,
             }
         });
 

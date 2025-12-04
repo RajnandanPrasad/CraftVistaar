@@ -21,7 +21,6 @@ const userSchema = new mongoose.Schema(
     // ⭐ Seller verification fields
     mobile: { type: String },
     workAddress: { type: String },
-
     accountNumber: { type: String },
     ifsc: { type: String },
     bankName: { type: String },
@@ -37,9 +36,34 @@ const userSchema = new mongoose.Schema(
       state: { type: String },
       zipCode: { type: String },
       country: { type: String, default: "India" }
-    }
+    }, // <- missing comma fixed here
+
+    // ⭐ Seller verification status
+    sellerVerificationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: function () {
+        return this.role === "seller" ? "pending" : undefined;
+      },
+    },
+
+    // ⭐ Seller documents
+    documents: {
+      aadhaarUrl: String,
+      panUrl: String,
+      gstUrl: String,
+      shopLicenseUrl: String,
+      extraDocs: [String],
+    },
+
+    // ⭐ Verification audit
+    verificationReason: { type: String }, // for rejection
+    verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // admin id
+    verifiedByName: { type: String },
+    verifiedByEmail: { type: String },
+    verifiedAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 module.exports = mongoose.model("User", userSchema);

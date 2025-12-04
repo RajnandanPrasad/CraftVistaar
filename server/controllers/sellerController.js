@@ -118,10 +118,50 @@ const getSellerOrders = async (req, res) => {
   }
 };
 
+// ✅ UPLOAD SELLER DOCUMENTS
+const uploadDocuments = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    console.log('Upload documents request received for seller:', sellerId);
+    console.log('req.files:', req.files);
+
+    // Extract Cloudinary URLs from req.files
+    const documents = {
+      aadhaarUrl: req.files?.aadhaar?.[0]?.path || undefined,
+      panUrl: req.files?.pan?.[0]?.path || undefined,
+      gstUrl: req.files?.gst?.[0]?.path || undefined,
+      shopLicenseUrl: req.files?.shopLicense?.[0]?.path || undefined,
+      extraDocs: req.files?.extraDocs?.map(file => file.path) || [],
+    };
+
+    console.log('Extracted documents:', documents);
+
+    // Update the seller's documents in the database
+    const updatedSeller = await User.findByIdAndUpdate(
+      sellerId,
+      { documents },
+      { new: true }
+    ).select('-passwordHash');
+
+    if (!updatedSeller) {
+      return res.status(404).json({ msg: 'Seller not found' });
+    }
+
+    res.json({
+      msg: 'Documents uploaded successfully',
+      documents: updatedSeller.documents,
+    });
+  } catch (error) {
+    console.error('Error uploading documents:', error);
+    res.status(500).json({ msg: 'Document upload failed' });
+  }
+};
+
 module.exports = {
   getSellerDashboardStats,
   getSellerProfile,
   updateSellerProfile,
   getSellerProducts,
   getSellerOrders,
+  uploadDocuments,
 };
