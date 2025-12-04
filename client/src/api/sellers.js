@@ -10,3 +10,14 @@ export const fetchSellerOrders = async () => {
     throw error;
   }
 };
+
+// Fetch seller analytics
+export const fetchSellerAnalytics = async () => {
+  try {
+    const response = await api.get('/seller/analytics');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching seller analytics:', error);
+    throw error;
+  }
+};

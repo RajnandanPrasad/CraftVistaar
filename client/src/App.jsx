@@ -28,6 +28,7 @@ import SellerProducts from "./pages/seller/SellerProducts";
 import SellerOrders from "./pages/seller/SellerOrders";
 import LearnPage from "./pages/seller/LearnPage";
 import LearnVideos from "./pages/seller/LearnVideos";
+import AdvancedAnalytics from "./pages/seller/AdvancedAnalytics";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -118,6 +119,14 @@ export default function App() {
                 element={
                   <ProtectedRoute requiredRole="seller">
                     <SellerOrders />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/seller/advanced-analytics"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <AdvancedAnalytics />
                   </ProtectedRoute>
                 }
               />

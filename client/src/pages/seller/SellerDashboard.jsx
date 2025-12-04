@@ -23,6 +23,7 @@ export default function SellerDashboard() {
   const [products, setProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -137,6 +138,8 @@ export default function SellerDashboard() {
       <div className="flex-1 p-6">
         <h2 className="text-3xl font-bold mb-6">Seller Dashboard</h2>
         <SellerStatsCards stats={stats} />
+
+
 
         <div className="mt-8">
           <button

@@ -7,6 +7,7 @@ const uploadDocuments = require("../middleware/uploadDocuments");
 
 const {
   getSellerDashboardStats,
+  getSellerAnalytics,
   getSellerProfile,
   getSellerProducts,
   getSellerOrders,
@@ -15,6 +16,7 @@ const {
 } = require("../controllers/sellerController");
 
 router.get("/dashboard", authMiddleware, sellerMiddleware, getSellerDashboardStats);
+router.get("/analytics", authMiddleware, sellerMiddleware, getSellerAnalytics);
 router.get("/profile", authMiddleware, sellerMiddleware, getSellerProfile);
 router.get("/products", authMiddleware, sellerMiddleware, getSellerProducts);
 router.get("/orders", authMiddleware, sellerMiddleware, getSellerOrders);
