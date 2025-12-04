@@ -153,25 +153,19 @@ const SellerOrders = () => {
                     {order.items.map((item, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-4 bg-gray-50 p-4 rounded-xl border"
+                        className="bg-gray-50 p-4 rounded-xl border"
                       >
-                        <img
-                          src={item.product?.images?.[0] || "/placeholder.png"}
-                          alt="product"
-                          className="w-20 h-20 rounded-lg object-cover border"
-                        />
+                        <p className="font-semibold text-gray-800">
+                          {item.product?.title}
+                        </p>
 
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">
-                            {item.product?.title}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Qty: {item.quantity} × ₹{item.price}
-                          </p>
-                          <p className="font-bold text-indigo-600">
-                            Total: ₹{item.quantity * item.price}
-                          </p>
-                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Qty: {item.quantity} × ₹{item.price}
+                        </p>
+
+                        <p className="font-bold text-indigo-600 mt-1">
+                          Total: ₹{item.quantity * item.price}
+                        </p>
                       </div>
                     ))}
                   </div>
