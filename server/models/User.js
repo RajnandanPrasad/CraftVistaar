@@ -15,10 +15,10 @@ const userSchema = new mongoose.Schema(
 
     isVerified: { type: Boolean, default: false },
 
-    // ✅ IMAGE FIELD (PERMANENT)
+    // IMAGE
     avatarUrl: { type: String },
 
-    // ⭐ Seller verification fields (YOUR FIELDS)
+    // ⭐ Seller verification fields
     mobile: { type: String },
     workAddress: { type: String },
 
@@ -26,9 +26,18 @@ const userSchema = new mongoose.Schema(
     ifsc: { type: String },
     bankName: { type: String },
 
-    // ⭐ Seller documents (YOUR FIELDS)
-    aadhaar: { type: String }, // file name/path
-    workImages: [{ type: String }], // array of file names
+    // ⭐ Seller documents
+    aadhaar: { type: String },
+    workImages: [{ type: String }],
+
+    // ⭐⭐ NEW: Saved shipping address for customers (future checkout autofill)
+    shippingAddress: {
+      street: { type: String },
+      city: { type: String },
+      state: { type: String },
+      zipCode: { type: String },
+      country: { type: String, default: "India" }
+    }
   },
   { timestamps: true }
 );

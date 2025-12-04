@@ -2,33 +2,19 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { getCurrentUser } from "../api/auth";
-import { createRazorpayOrder } from "../api/payment";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 
 export default function Cart() {
   const { t } = useTranslation();
   const { cartItems, updateQuantity, removeFromCart, clearCart, getTotalPrice } = useCart();
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const navigate = useNavigate();
   const user = getCurrentUser();
 
   const totalPrice = getTotalPrice();
 
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      if (window.Razorpay) return resolve(true);
-
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = () => {
     if (!user) {
       toast.error(t("pleaseLoginToPlaceOrder"));
       navigate("/login");
@@ -40,71 +26,7 @@ export default function Cart() {
       return;
     }
 
-    setLoading(true);
-
-    try {
-      // 1️⃣ Create Razorpay order on backend
-      const res = await createRazorpayOrder(totalPrice);
-      const orderId = res.orderId;
-
-      if (!orderId) {
-        toast.error(t("failedToCreatePaymentOrder"));
-        setLoading(false);
-        return;
-      }
-
-      // 2️⃣ Load Razorpay checkout script
-      const loaded = await loadRazorpayScript();
-      if (!loaded) {
-        toast.error(t("failedToLoadRazorpay"));
-        setLoading(false);
-        return;
-      }
-
-      // 3️⃣ Open Razorpay popup
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: totalPrice * 100,
-        currency: "INR",
-        name: "CraftKart",
-        description: "Order Payment",
-        order_id: orderId,
-
-        handler: function (response) {
-          // On successful payment
-          toast.success(t("paymentSuccessful"));
-
-          const order = {
-            id: Date.now().toString(),
-            userId: user.id,
-            items: cartItems,
-            total: totalPrice,
-            date: new Date().toISOString(),
-            status: "paid",
-            paymentId: response.razorpay_payment_id,
-          };
-
-          const existingOrders = JSON.parse(localStorage.getItem("craftkart_orders") || "[]");
-          existingOrders.push(order);
-          localStorage.setItem("craftkart_orders", JSON.stringify(existingOrders));
-
-          clearCart();
-          navigate("/products");
-        },
-
-        theme: {
-          color: "#4f46e5",
-        },
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-    } catch (err) {
-      console.log(err);
-      toast.error(t("paymentFailed"));
-    }
-
-    setLoading(false);
+    navigate("/checkout");
   };
 
   return (
@@ -137,7 +59,9 @@ export default function Cart() {
                   />
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800">{item.title}</h3>
-                    <p className="text-gray-600">₹{item.price} {t("each")}</p>
+                    <p className="text-gray-600">
+                      ₹{item.price} {t("each")}
+                    </p>
                   </div>
                 </div>
 
@@ -174,7 +98,9 @@ export default function Cart() {
           </div>
 
           <div className="mt-6 flex justify-between items-center bg-white p-4 rounded-lg shadow">
-            <h3 className="text-xl font-bold text-gray-800">{t("total")}: ₹{totalPrice}</h3>
+            <h3 className="text-xl font-bold text-gray-800">
+              {t("total")}: ₹{totalPrice}
+            </h3>
             <div className="space-x-4">
               <button
                 onClick={clearCart}
@@ -182,14 +108,13 @@ export default function Cart() {
               >
                 {t("clearCart")}
               </button>
+
               <button
                 onClick={handlePlaceOrder}
                 disabled={loading}
-                className={`bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold"
               >
-                {loading ? t("placingOrder") : t("placeOrder")}
+                {t("placeOrder")}
               </button>
             </div>
           </div>

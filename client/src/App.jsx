@@ -1,4 +1,6 @@
 import React from "react";
+import OrderConfirm from "./pages/OrderConfirm";
+import Checkout from "./pages/Checkout";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast";
@@ -32,7 +34,8 @@ export default function App() {
               <Route path="/products" element={<Products />} />
               <Route path="/category/:categoryName" element={<Products />} />
               <Route path="/products/search" element={<Products />} />
-
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order/confirm" element={<OrderConfirm />} />
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/auth" element={<Auth />} />
