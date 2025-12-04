@@ -4,6 +4,7 @@ import { useCart } from "../context/CartContext";
 import { getCurrentUser } from "../api/auth";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import logo from "../assets/logo.webp";
 
 export default function Cart() {
   const { t } = useTranslation();
@@ -50,7 +51,13 @@ export default function Cart() {
               >
                 <div className="flex items-center gap-4">
                   <img
-                    src={item.images[0]}
+                    src={
+                      item.images && item.images.length > 0
+                        ? item.images[0].startsWith("http")
+                          ? item.images[0]
+                          : `http://localhost:5000/${item.images[0]}`
+                        : "/assets/logo.webp"
+                    }
                     alt={item.title}
                     className="w-16 h-16 object-cover rounded"
                     onError={(e) => {

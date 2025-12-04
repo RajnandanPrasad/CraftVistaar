@@ -16,8 +16,10 @@ export default function ProductCard({ product }) {
     product.images && product.images.length > 0
       ? product.images[0].startsWith("http") // If full URL
         ? product.images[0]
-        : `${import.meta.env.VITE_BACKEND_URL}/${product.images[0]}` // Local uploads
-      : "/assets/logo.webp"; // Fallback
+        : product.images[0].startsWith("/") // If local asset
+        ? product.images[0]
+        : `http://localhost:5000/${product.images[0]}` // Backend uploads
+      : logo; // Fallback
 
   return (
     <div className="bg-white shadow-md rounded-2xl p-4 hover:shadow-lg transition-all duration-300">
@@ -26,7 +28,7 @@ export default function ProductCard({ product }) {
         alt={product.title}
         className="w-full h-48 object-cover rounded-lg mb-4"
         onError={(e) => {
-          e.target.src = "/assets/logo.webp";
+          e.target.src = logo;
         }}
       />
 
