@@ -35,6 +35,155 @@ const getSellerDashboardStats = async (req, res) => {
   }
 };
 
+// ✅ SELLER ANALYTICS
+const getSellerAnalytics = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+
+    // Get seller's product IDs
+    const productIds = await Product.find({ sellerId }).select("_id").lean();
+    const productIdArray = productIds.map((p) => p._id);
+
+    if (productIdArray.length === 0) {
+      return res.json({
+        totalRevenue: 0,
+        pendingPayout: 0,
+        deliveredOrders: 0,
+        cancelledOrders: 0,
+        monthlySales: [],
+        topProduct: null,
+      });
+    }
+
+    // Total Revenue (delivered orders)
+    const revenueStats = await Order.aggregate([
+      { $match: { "items.product": { $in: productIdArray }, status: "delivered" } },
+      { $unwind: "$items" },
+      { $match: { "items.product": { $in: productIdArray } } },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+        },
+      },
+    ]);
+    const totalRevenue = revenueStats.length > 0 ? revenueStats[0].totalRevenue : 0;
+
+    // Pending Payout (not delivered orders)
+    const payoutStats = await Order.aggregate([
+      { $match: { "items.product": { $in: productIdArray }, status: { $ne: "delivered" } } },
+      { $unwind: "$items" },
+      { $match: { "items.product": { $in: productIdArray } } },
+      {
+        $group: {
+          _id: null,
+          pendingPayout: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+        },
+      },
+    ]);
+    const pendingPayout = payoutStats.length > 0 ? payoutStats[0].pendingPayout : 0;
+
+    // Order counts
+    const orderCounts = await Order.aggregate([
+      { $match: { "items.product": { $in: productIdArray } } },
+      { $unwind: "$items" },
+      { $match: { "items.product": { $in: productIdArray } } },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const deliveredOrders = orderCounts.find((o) => o._id === "delivered")?.count || 0;
+    const cancelledOrders = orderCounts.find((o) => o._id === "cancelled")?.count || 0;
+
+    // Monthly Sales (delivered orders)
+    const monthlySales = await Order.aggregate([
+      { $match: { "items.product": { $in: productIdArray }, status: "delivered" } },
+      { $unwind: "$items" },
+      { $match: { "items.product": { $in: productIdArray } } },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          totalSales: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: {
+            $concat: [
+              { $toString: "$_id.year" },
+              "-",
+              {
+                $cond: {
+                  if: { $lt: ["$_id.month", 10] },
+                  then: { $concat: ["0", { $toString: "$_id.month" }] },
+                  else: { $toString: "$_id.month" },
+                },
+              },
+            ],
+          },
+          sales: "$totalSales",
+        },
+      },
+      { $sort: { month: 1 } },
+    ]);
+
+    // Top Selling Product
+    const topProductStats = await Order.aggregate([
+      { $match: { "items.product": { $in: productIdArray }, status: "delivered" } },
+      { $unwind: "$items" },
+      { $match: { "items.product": { $in: productIdArray } } },
+      {
+        $group: {
+          _id: "$items.product",
+          totalSold: { $sum: "$items.quantity" },
+          totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+        },
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 1 },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      {
+        $project: {
+          _id: 0,
+          name: "$product.title",
+          totalSold: 1,
+          totalRevenue: 1,
+        },
+      },
+    ]);
+
+    const topProduct = topProductStats.length > 0 ? topProductStats[0] : null;
+
+    res.json({
+      totalRevenue,
+      pendingPayout,
+      deliveredOrders,
+      cancelledOrders,
+      monthlySales,
+      topProduct,
+    });
+  } catch (err) {
+    console.error("Error fetching seller analytics:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
 // ✅ GET SELLER PROFILE
 const getSellerProfile = async (req, res) => {
   try {
@@ -159,6 +308,7 @@ const uploadDocuments = async (req, res) => {
 
 module.exports = {
   getSellerDashboardStats,
+  getSellerAnalytics,
   getSellerProfile,
   updateSellerProfile,
   getSellerProducts,

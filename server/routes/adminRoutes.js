@@ -8,11 +8,23 @@ const User = require("../models/User");
 const { authMiddleware, roleCheck } = require("../middleware/authMiddleware");
 const adminMiddleware = roleCheck(["admin"]);
 
-const { getAdminDashboardStats, getAdminProfile } = require("../controllers/adminController");
+const {
+  getAdminDashboardStats,
+  getAdminProfile,
+  getSellerAnalytics,          // ✅ NEW CONTROLLER IMPORT
+} = require("../controllers/adminController");
 
 // --- New dashboard and profile routes ---
 router.get('/dashboard', authMiddleware, adminMiddleware, getAdminDashboardStats);
 router.get('/profile', authMiddleware, adminMiddleware, getAdminProfile);
+
+// ✅✅✅ SELLER ANALYTICS ROUTE (NEW)
+router.get(
+  "/seller-analytics",
+  authMiddleware,
+  adminMiddleware,
+  getSellerAnalytics
+);
 
 // --- Get all sellers ---
 router.get('/sellers', authMiddleware, adminMiddleware, async (req, res) => {
@@ -43,7 +55,6 @@ router.put('/verify-seller/:sellerId', authMiddleware, adminMiddleware, async (r
 // --- Get all products (admin) ---
 router.get('/products', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    // full product details + seller name & email (P3)
     const products = await Product.find().populate('sellerId', 'name email');
     res.json(products);
   } catch (err) {
@@ -105,28 +116,21 @@ router.patch('/users/:id/verify', authMiddleware, adminMiddleware, async (req, r
       return res.status(400).json({ msg: 'Rejection reason is required' });
     }
 
-    // Update verification status
     user.sellerVerificationStatus = status;
+
     if (status === 'rejected') {
       user.verificationReason = reason;
     }
 
-    // Audit trail
     user.verifiedBy = req.user._id;
     user.verifiedByName = req.user.name;
     user.verifiedByEmail = req.user.email;
     user.verifiedAt = new Date();
 
-    try {
-      await user.save();
-    } catch (saveErr) {
-      console.error('Error saving user:', saveErr);
-      return res.status(500).json({ msg: 'Error saving user verification', error: saveErr.message });
-    }
+    await user.save();
 
-    // TODO: Implement notification (email/SMS) if notify === true
     if (notify) {
-      // Stub: console.log(`Notification sent to ${user.email} for ${status}`);
+      // Notification stub
     }
 
     res.json({ msg: 'Verification updated successfully', user });
@@ -151,14 +155,12 @@ router.delete('/users/:id', authMiddleware, adminMiddleware, async (req, res) =>
 });
 
 // --- Get all orders (admin) ---
-// NOTE: Per your choice (Option A) we return compact order objects for UI
 router.get('/orders', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const orders = await Order.find()
       .populate('customer', 'name email')
       .sort({ createdAt: -1 });
 
-    // Shape into compact objects for admin UI (A)
     const compact = orders.map(o => ({
       _id: o._id,
       customerName: o.customer?.name || '—',

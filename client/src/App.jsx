@@ -14,17 +14,22 @@ import BuyPage from "./pages/BuyPage";
 import Cart from "./pages/Cart";
 import Auth from "./pages/Auth";
 import ProductDetails from "./pages/ProductDetails";
+import Profile from "./pages/Profile";
 
+// ✅ Admin Pages
+import SellerAnalytics from "./pages/admin/SellerAnalytics";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProfile from "./pages/admin/AdminProfile";
+import AdminUsers from "./pages/admin/Users";
+
+// ✅ Seller Pages
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import SellerProfile from "./pages/seller/SellerProfile";
 import SellerProducts from "./pages/seller/SellerProducts";
 import SellerOrders from "./pages/seller/SellerOrders";
 import LearnPage from "./pages/seller/LearnPage";
 import LearnVideos from "./pages/seller/LearnVideos";
-
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminProfile from "./pages/admin/AdminProfile";
-import AdminUsers from "./pages/admin/Users";
+import AdvancedAnalytics from "./pages/seller/AdvancedAnalytics";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -46,12 +51,22 @@ export default function App() {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order/confirm" element={<OrderConfirm />} />
 
-              {/* ⭐️ ADDED MY ORDERS ROUTE (DO NOT MODIFY ANYTHING ELSE) */}
+              {/* ⭐️ MY ORDERS ROUTE */}
               <Route
                 path="/orders"
                 element={
                   <ProtectedRoute requiredRole="customer">
                     <MyOrders />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Customer Profile Route */}
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute requiredRole="customer">
+                    <Profile />
                   </ProtectedRoute>
                 }
               />
@@ -118,6 +133,14 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/seller/advanced-analytics"
+                element={
+                  <ProtectedRoute requiredRole="seller">
+                    <AdvancedAnalytics />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Admin Routes */}
               <Route
@@ -151,6 +174,16 @@ export default function App() {
                 element={
                   <ProtectedRoute requiredRole="admin">
                     <AdminUsers />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* ✅ Admin - Seller Analytics Page */}
+              <Route
+                path="/admin/seller-analytics"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <SellerAnalytics />
                   </ProtectedRoute>
                 }
               />

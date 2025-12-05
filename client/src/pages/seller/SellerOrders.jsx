@@ -45,7 +45,7 @@ export default function SellerOrders() {
 
   if (loading) {
     return (
-      <div className="flex">
+      <div className="flex min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
         <SellerSidebar />
         <div className="flex-1 p-6 flex justify-center items-center">
           <div className="animate-pulse text-gray-500 text-lg">
@@ -66,7 +66,7 @@ export default function SellerOrders() {
   };
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
       <SellerSidebar />
 
       <div className="flex-1 p-6 bg-gray-50 min-h-screen">
@@ -116,9 +116,7 @@ export default function SellerOrders() {
 
                   <select
                     value={order.status}
-                    onChange={(e) =>
-                      updateStatus(order._id, e.target.value)
-                    }
+                    onChange={(e) => updateStatus(order._id, e.target.value)}
                     className="mt-3 px-3 py-2 border rounded-lg bg-gray-50 text-sm hover:bg-gray-100 transition"
                   >
                     <option value="pending">Pending</option>
@@ -131,7 +129,7 @@ export default function SellerOrders() {
                 </div>
               </div>
 
-              {/* ITEMS LIST */}
+              {/* ITEMS */}
               <div className="border-t pt-5">
                 <h4 className="text-lg font-semibold mb-3 text-gray-800">
                   🛍 Items

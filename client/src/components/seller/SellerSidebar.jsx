@@ -12,6 +12,7 @@ export default function SellerSidebar() {
     { to: "/seller/products", label: t("products") },
     { to: "/seller/orders", label: t("orders") },
     { to: "/seller/learn", label: "📘 " + t("learn & Grow") },
+    { to: "/seller/advanced-analytics", label: "📊 Advanced Analytics" },
   ];
 
   return (
