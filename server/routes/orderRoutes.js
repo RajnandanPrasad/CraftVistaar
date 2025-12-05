@@ -226,7 +226,7 @@ router.get('/seller/orders', authMiddleware, async (req, res) => {
       "items.seller": req.user._id
     })
       .populate("customer", "name email")
-      .populate("items.product", "title price")
+        .populate("items.product", "title price images sellerId") 
       .sort({ createdAt: -1 });
 
     res.json(orders);

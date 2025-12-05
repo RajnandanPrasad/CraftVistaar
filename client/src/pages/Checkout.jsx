@@ -146,11 +146,12 @@ export default function Checkout() {
         return;
       }
 
-      const formattedItems = cartItems.map((item) => ({
-        product: item._id || item.id,
-        quantity: item.quantity,
-        price: item.price,
-      }));
+   const formattedItems = cartItems.map((item) => ({
+  product: item._id || item.id,
+  quantity: item.quantity,
+  price: item.price,
+  sellerId: item.sellerId,       // ⭐ VERY IMPORTANT
+}));
 
       const nameToUse = address.fullName || user?.name;
       const phoneToUse = address.phone || user?.mobile;

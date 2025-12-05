@@ -18,7 +18,7 @@ const categories = [
 ];
 
 /* ------------------------------------------------------------------
-   ⭐ SELLER ORDERS COMPONENT (Added without touching your product code)
+   ⭐ SELLER ORDERS COMPONENT
 ------------------------------------------------------------------- */
 function SellerOrders() {
   const [orders, setOrders] = useState([]);
@@ -125,7 +125,7 @@ function SellerOrders() {
 }
 
 /* ------------------------------------------------------------------
-   ⭐ MAIN SELLER DASHBOARD (Your original code preserved)
+   ⭐ MAIN SELLER DASHBOARD 
 ------------------------------------------------------------------- */
 export default function SellerDashboard() {
   const [products, setProducts] = useState([]);
