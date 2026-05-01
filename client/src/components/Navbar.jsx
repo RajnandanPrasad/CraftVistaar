@@ -130,7 +130,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="w-full flex items-center justify-between px-6 py-3 bg-white shadow-md sticky top-0 z-50">
+    <nav className="w-full flex items-center justify-between px-6 py-3 bg-gradient-to-r from-pink-100 via-white to-blue-100 shadow-md sticky top-0 z-50">
       {/* LEFT - LOGO ONLY */}
       <div className="flex items-center gap-2">
         <Link to="/" className="flex items-center gap-2">

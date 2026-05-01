@@ -5,6 +5,7 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const Razorpay = require("razorpay");
 const { authMiddleware } = require('../middleware/authMiddleware');
+const PDFDocument = require("pdfkit");
 
 const router = express.Router();
 
@@ -198,15 +199,26 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     const { status } = req.body;
 
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
+    const order = await Order.findById(req.params.id);
 
-    if (!order) return res.status(404).json({ msg: 'Order not found' });
+    if (!order)
+      return res.status(404).json({ msg: 'Order not found' });
+
+    order.status = status;
+
+    // ✅ invoice generation
+    if (status === "delivered" && !order.invoice?.generated) {
+      order.invoice = {
+        number: "INV-" + Date.now(),
+        generated: true,
+        generatedAt: new Date()
+      };
+    }
+
+    await order.save();
 
     res.json({ msg: 'Order status updated', order });
+
   } catch (err) {
     console.error('Error updating order status (admin):', err);
     res.status(500).json({ msg: 'Server error' });
@@ -256,6 +268,14 @@ router.patch('/seller/update-status/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ msg: 'Order not found for this seller' });
 
     order.status = status;
+    // ✅ same logic for seller
+if (status === "delivered" && !order.invoice?.generated) {
+  order.invoice = {
+    number: "INV-" + Date.now(),
+    generated: true,
+    generatedAt: new Date()
+  };
+}
     await order.save();
 
     res.json({ msg: "Order status updated", order });
@@ -265,4 +285,130 @@ router.patch('/seller/update-status/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// ===============================
+// 🧾 DOWNLOAD INVOICE PDF
+// ===============================
+router.get("/invoice/:id", authMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate("customer", "name email")
+      .populate("items.product", "title");
+
+    if (!order) return res.status(404).json({ msg: "Order not found" });
+
+    if (!order.invoice?.generated) {
+      return res.status(400).json({ msg: "Invoice not generated yet" });
+    }
+
+    const doc = new PDFDocument({ margin: 50 });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=invoice-${order.invoice.number}.pdf`
+    );
+
+    doc.pipe(res);
+
+    // ===============================
+    // 🧾 HEADER
+    // ===============================
+    doc.fontSize(22).text("CraftKart Invoice", { align: "center" });
+    doc.moveDown(1.5);
+
+    // ===============================
+    // 📄 INVOICE INFO
+    // ===============================
+    doc
+      .fontSize(12)
+      .text(`Invoice No: ${order.invoice.number}`)
+      .text(`Date: ${new Date(order.invoice.generatedAt).toLocaleDateString()}`);
+
+    doc.moveDown();
+
+    // ===============================
+    // 👤 CUSTOMER INFO
+    // ===============================
+    doc
+      .text(`Customer: ${order.customer.name}`)
+      .text(`Email: ${order.customer.email}`);
+
+    doc.moveDown(1.5);
+
+    // ===============================
+    // 📦 ITEMS TABLE
+    // ===============================
+    let tableTop = doc.y;
+
+    const col1 = 50;   // Product
+    const col2 = 300;  // Qty
+    const col3 = 360;  // Price
+    const col4 = 440;  // Total
+
+    // Header
+    doc.fontSize(12).font("Helvetica-Bold");
+    doc.text("Product", col1, tableTop);
+    doc.text("Qty", col2, tableTop);
+    doc.text("Price", col3, tableTop);
+    doc.text("Total", col4, tableTop);
+
+    doc.moveDown();
+
+    // Line
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+    doc.moveDown(0.5);
+
+    // Rows
+    doc.font("Helvetica");
+    let y = doc.y;
+
+    order.items.forEach((item) => {
+      const total = item.quantity * item.price;
+
+      doc.text(item.product.title, col1, y);
+      doc.text(item.quantity.toString(), col2, y);
+      doc.text(`Rs. ${item.price}`, col3, y);
+      doc.text(`Rs. ${total}`, col4, y);
+
+      y += 20;
+    });
+
+    // Move cursor
+    doc.y = y;
+
+    doc.moveDown();
+
+    // Bottom line
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+    doc.moveDown();
+
+    // ===============================
+    // 💰 TOTAL
+    // ===============================
+    doc
+      .fontSize(14)
+      .font("Helvetica-Bold")
+      .text(`Total Amount: Rs. ${order.totalAmount}`, {
+        align: "right",
+      });
+
+    doc.moveDown(2);
+
+    // ===============================
+    // 🙏 FOOTER
+    // ===============================
+    doc
+      .fontSize(10)
+      .fillColor("gray")
+      .text("Thank you for shopping with CraftKart!", {
+        align: "center",
+      });
+
+    doc.end();
+
+  } catch (err) {
+    console.error("Invoice error:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
 module.exports = router;

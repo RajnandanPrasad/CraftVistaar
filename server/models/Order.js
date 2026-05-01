@@ -25,9 +25,15 @@ const orderSchema = new mongoose.Schema({
         zipCode: String,
         country: String
     },
+    invoice: {
+  number: String,
+  generated: { type: Boolean, default: false },
+  generatedAt: Date
+},
 
     paymentMethod: { type: String, default: 'razorpay' },
     paymentStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' }
 }, { timestamps: true });
+
 
 module.exports = mongoose.model("Order", orderSchema);

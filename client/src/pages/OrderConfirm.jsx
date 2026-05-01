@@ -3,6 +3,7 @@ import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { createRazorpayOrder } from "../api/payment";
 import toast from "react-hot-toast";
+import API from "../api/api"; // adjust path if different
 
 
 export default function OrderConfirm() {

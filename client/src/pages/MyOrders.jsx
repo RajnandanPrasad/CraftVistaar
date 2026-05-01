@@ -21,6 +21,32 @@ export default function MyOrders() {
     load();
   }, []);
 
+  const downloadInvoice = async (order) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_BASE}/api/orders/invoice/${order._id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("craftkart_token")}`,
+        },
+      }
+    );
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoice-${order.invoice.number}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+  } catch (err) {
+    console.error(err);
+    alert("Download failed");
+  }
+};
   const formatDate = (iso) => {
     const d = new Date(iso);
     return d.toLocaleString("en-IN", {
@@ -203,6 +229,29 @@ export default function MyOrders() {
                         Total: ₹{order.totalAmount}
                       </p>
                     </div>
+                    <div>
+
+
+  {/* ✅ INVOICE SECTION */}
+  {order.status === "delivered" && order.invoice?.generated && (
+    <div className="mt-4 border-t pt-4">
+      <p className="text-green-700 font-semibold">
+        Invoice: {order.invoice.number}
+      </p>
+
+      <p className="text-sm text-gray-500">
+        Generated on: {new Date(order.invoice.generatedAt).toLocaleDateString()}
+      </p>
+
+      <button
+        className="mt-2 bg-blue-600 text-white px-4 py-2 rounded"
+ onClick={() => downloadInvoice(order)}
+      >
+        Download Invoice
+      </button>
+    </div>
+  )}
+</div>
                   </div>
                 </div>
               )}
