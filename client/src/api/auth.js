@@ -1,9 +1,4 @@
-import axios from "axios";
-
-const API = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE}/api`,
-});
-
+import API from "./api";
 // Add token to requests
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("craftkart_token");

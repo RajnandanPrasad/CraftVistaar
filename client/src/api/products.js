@@ -1,8 +1,4 @@
-import axios from "axios";
-
-const API = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE}/api`, // use your deployed backend
-});
+import API from "./api";
 
 // Optional: attach token
 API.interceptors.request.use((config) => {
