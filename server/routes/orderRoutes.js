@@ -91,6 +91,26 @@ router.post('/', authMiddleware, async (req, res) => {
       0
     );
 
+
+for (const item of items) {
+  const product = await Product.findById(item.product);
+
+  if (!product) {
+    return res.status(404).json({ msg: "Product not found" });
+  }
+
+  if (product.stock < item.quantity) {
+    return res.status(400).json({
+      msg: `Only ${product.stock} left for ${product.title}`
+    });
+  }
+
+  // 🔥 REDUCE STOCK HERE
+  product.stock -= item.quantity;
+
+  await product.save();
+}
+
     const newOrder = new Order({
       customer: req.user._id,
       items: itemsWithSeller,
@@ -267,8 +287,20 @@ router.patch('/seller/update-status/:id', authMiddleware, async (req, res) => {
     if (!order)
       return res.status(404).json({ msg: 'Order not found for this seller' });
 
-    order.status = status;
-    // ✅ same logic for seller
+const oldStatus = order.status; // ⭐ track previous status
+
+order.status = status;
+
+// 🔄 RESTORE STOCK IF CANCELLED
+if (status === "cancelled" && oldStatus !== "cancelled") {
+  for (const item of order.items) {
+    await Product.findByIdAndUpdate(item.product, {
+      $inc: { stock: item.quantity }
+    });
+  }
+}
+
+// ✅ Invoice logic
 if (status === "delivered" && !order.invoice?.generated) {
   order.invoice = {
     number: "INV-" + Date.now(),
@@ -276,9 +308,11 @@ if (status === "delivered" && !order.invoice?.generated) {
     generatedAt: new Date()
   };
 }
-    await order.save();
+
+await order.save();
 
     res.json({ msg: "Order status updated", order });
+
   } catch (err) {
     console.error("Seller status update error:", err);
     res.status(500).json({ msg: "Server error" });

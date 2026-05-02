@@ -4,7 +4,6 @@ import API from "../../api/api";
 import toast from "react-hot-toast";
 import SellerSidebar from "../../components/seller/SellerSidebar";
 import SellerStatsCards from "../../components/seller/SellerStatsCards";
-
 const categories = [
   "Clothing",
   "Electronics",
@@ -23,13 +22,13 @@ export default function SellerDashboard() {
   const [products, setProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     price: "",
     category: "",
     images: [""],
+     stock: ""
   });
 
   const user = getCurrentUser();
@@ -41,31 +40,49 @@ export default function SellerDashboard() {
       setProducts(res.data);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load products");
+     if (!window.errorShown) {
+  toast.error("Failed to load products");
+  window.errorShown = true;
+}
     }
   };
 
-  useEffect(() => {
-    if (user && user.role === "seller") {
-      API.get("/seller/dashboard").then(res => setStats(res.data)).catch(err => console.error(err));
-      loadProducts();
-    }
-  }, [user]);
+ useEffect(() => {
+  if (!user || user.role !== "seller") return;
 
+  const fetchData = async () => {
+    try {
+      const statsRes = await API.get("/seller/dashboard");
+      setStats(statsRes.data);
+
+      const productRes = await API.get("/seller/products");
+      setProducts(productRes.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchData();
+}, []); // ✅ EMPTY DEPENDENCY
   // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.description || !formData.price || !formData.category) {
+    if (!formData.title || !formData.description || !formData.price || !formData.category || formData.stock === "") {
       toast.error("Please fill all fields");
       return;
     }
+    if (parseInt(formData.stock) < 0) {
+  toast.error("Stock cannot be negative");
+  return;
+}
 
     try {
       if (editingProduct) {
         await API.put(`/products/${editingProduct._id}`, {
           ...formData,
           price: parseFloat(formData.price),
+          stock: parseInt(formData.stock)
         });
         toast.success("Product updated successfully!");
         resetForm();
@@ -73,6 +90,7 @@ export default function SellerDashboard() {
         await API.post("/products", {
           ...formData,
           price: parseFloat(formData.price),
+          stock: parseInt(formData.stock)
         });
         toast.success("Product added successfully!");
         // Reset form data but keep form open for adding another product
@@ -82,6 +100,7 @@ export default function SellerDashboard() {
           price: "",
           category: "",
           images: [""],
+          stock: ""
         });
         setEditingProduct(null);
       }
@@ -100,6 +119,7 @@ export default function SellerDashboard() {
       price: product.price.toString(),
       category: product.category,
       images: product.images,
+      stock: product.stock?.toString() || ""
     });
     setShowForm(true);
   };
@@ -123,6 +143,7 @@ export default function SellerDashboard() {
       price: "",
       category: "",
       images: [""],
+      stock: ""
     });
     setEditingProduct(null);
     setShowForm(false);
@@ -136,7 +157,7 @@ export default function SellerDashboard() {
     <div className="flex">
       <SellerSidebar />
       <div className="flex-1 p-6">
-        <h2 className="text-3xl font-bold mb-6">Seller Dashboard</h2>
+        <h2 className="text-3xl font-bold mb-6">Seller Dashboard </h2>
         <SellerStatsCards stats={stats} />
 
 
@@ -166,6 +187,16 @@ export default function SellerDashboard() {
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   className="w-full p-2 border rounded"
                 />
+                <input
+  type="number"
+  placeholder="Stock Quantity"
+  value={formData.stock}
+  onChange={(e) =>
+    setFormData({ ...formData, stock: e.target.value })
+  }
+  className="w-full p-2 border rounded"
+  min="0" 
+/>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -224,6 +255,9 @@ export default function SellerDashboard() {
                 <h3 className="text-lg font-semibold">{product.title}</h3>
                 <p className="text-gray-600 text-sm mb-2">{product.description}</p>
                 <p className="text-green-600 font-bold">₹{product.price}</p>
+                <p className="text-sm text-gray-700">
+  Stock: {product.stock}
+</p>
                 <p className="text-xs mt-1">
                   {product.approved ? (
                     <span className="text-green-600 font-semibold">✅ Approved</span>

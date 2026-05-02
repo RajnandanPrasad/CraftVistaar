@@ -1,15 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import toast from "react-hot-toast";
+
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
 
-  const handleAddToCart = () => {
-    addToCart(product);
-    toast.success(`${product.title} added to cart!`);
-  };
+const handleAddToCart = () => {
+  if (product.stock === 0) {
+    toast.error("This product is out of stock");
+    return;
+  }
+
+  addToCart(product);
+ 
+};
 
   // FIX: Build correct image URL
   const imageUrl =
@@ -49,13 +54,27 @@ export default function ProductCard({ product }) {
         >
           View Details
         </Link>
+        {product.stock === 0 && (
+  <p className="text-red-500 font-semibold mb-2">Out of Stock</p>
+)}
+
+{product.stock > 0 && product.stock < 5 && (
+  <p className="text-orange-500 text-sm mb-2">
+    Only {product.stock} left!
+  </p>
+)}
 
         <button
-          onClick={handleAddToCart}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-        >
-          Add to Cart
-        </button>
+  onClick={handleAddToCart}
+  disabled={product.stock === 0}
+  className={`px-4 py-2 rounded-lg transition ${
+    product.stock === 0
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-green-600 text-white hover:bg-green-700"
+  }`}
+>
+  {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+</button>
       </div>
     </div>
   );

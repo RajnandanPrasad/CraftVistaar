@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-
+import toast from "react-hot-toast";
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
@@ -14,13 +14,20 @@ export function CartProvider({ children }) {
   }, [cartItems]);
 
   // ✅ Add product to cart
-  const addToCart = (product) => {
+const addToCart = (product) => {
   setCartItems((prev) => {
     const existing = prev.find(
       (item) => item._id === product._id || item.id === product._id
     );
 
     if (existing) {
+      if (existing.quantity >= product.stock) {
+        toast.error(`Only ${product.stock} items available`);
+        return prev;
+      }
+
+      toast.success(`${product.title} added to cart`); // ✅ here
+
       return prev.map((item) =>
         item._id === product._id || item.id === product._id
           ? { ...item, quantity: item.quantity + 1 }
@@ -28,12 +35,15 @@ export function CartProvider({ children }) {
       );
     }
 
+    // ✅ New product
+    toast.success(`${product.title} added to cart`);
+
     return [
       ...prev,
       {
         ...product,
-        id: product._id,   // keep old system working
-        _id: product._id,  // new correct system
+        id: product._id,
+        _id: product._id,
         quantity: 1,
       },
     ];
@@ -41,18 +51,26 @@ export function CartProvider({ children }) {
 };
 
   // ✅ Update quantity of a product
- const updateQuantity = (id, quantity) => {
-  if (quantity <= 0) {
-    removeFromCart(id);
-    return;
-  }
-
+const updateQuantity = (id, quantity) => {
   setCartItems((prev) =>
-    prev.map((item) =>
-      item.id === id || item._id === id
-        ? { ...item, quantity }
-        : item
-    )
+    prev.map((item) => {
+      if (item.id === id || item._id === id) {
+
+        // 🔴 Block exceeding stock
+        if (quantity > item.stock) {
+          toast.error(`Only ${item.stock} available`);
+          return item; // keep old value
+        }
+
+        // 🔴 Remove properly (without null)
+        if (quantity <= 0) {
+          return { ...item, quantity: 0 };
+        }
+
+        return { ...item, quantity };
+      }
+      return item;
+    }).filter(item => item.quantity > 0) // remove safely
   );
 };
 

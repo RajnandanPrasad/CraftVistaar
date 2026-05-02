@@ -3,11 +3,45 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  price: { type: Number, required: true },
+
+  price: { 
+    type: Number, 
+    required: true,
+    min: 0
+  },
+
   category: { type: String, required: true },
+
   images: [{ type: String }],
-  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  approved: { type: Boolean, default: false }
+
+  sellerId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true 
+  },
+
+  approved: { type: Boolean, default: false },
+
+  // ✅ STOCK MANAGEMENT STARTS HERE
+  stock: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0
+  },
+
+  // ✅ Derived field (optional but useful)
+  inStock: {
+    type: Boolean,
+    default: true
+  }
+
 }, { timestamps: true });
+
+/* ✅ Auto update inStock */
+productSchema.pre('save', function (next) {
+  this.inStock = this.stock > 0;
+  next();
+});
 
 module.exports = mongoose.model('Product', productSchema);

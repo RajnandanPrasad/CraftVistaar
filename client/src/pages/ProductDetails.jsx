@@ -36,12 +36,17 @@ export default function ProductDetails() {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
-    if (product) {
-      addToCart(product);
-      toast.success(t("addedToCart"));
-    }
-  };
+const handleAddToCart = () => {
+  if (!product) return;
+
+  if (product.stock === 0) {
+    toast.error("This product is out of stock");
+    return;
+  }
+
+  addToCart(product);
+ 
+};
 
   if (loading) {
     return (
@@ -103,12 +108,26 @@ export default function ProductDetails() {
                 <span className="text-2xl font-bold text-green-600">₹{product.price}</span>
               </div>
               <div className="flex gap-4">
+                {product.stock === 0 && (
+  <p className="text-red-500 font-bold mb-2">Out of Stock</p>
+)}
+
+{product.stock > 0 && product.stock < 5 && (
+  <p className="text-orange-500 mb-2">
+    Only {product.stock} left!
+  </p>
+)}
                 <button
-                  onClick={handleAddToCart}
-                  className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
-                >
-                  {t("addToCart")}
-                </button>
+  onClick={handleAddToCart}
+  disabled={product.stock === 0}
+  className={`px-6 py-3 rounded-lg transition ${
+    product.stock === 0
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-green-600 text-white hover:bg-green-700"
+  }`}
+>
+  {product.stock === 0 ? "Out of Stock" : t("addToCart")}
+</button>
               </div>
             </div>
           </div>

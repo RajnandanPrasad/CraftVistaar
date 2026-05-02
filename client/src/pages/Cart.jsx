@@ -26,7 +26,12 @@ export default function Cart() {
       toast.error(t("cartIsEmpty"));
       return;
     }
-
+for (let item of cartItems) {
+  if (item.quantity > item.stock) {
+    toast.error(`Only ${item.stock} available for ${item.title}`);
+    return;
+  }
+}
     navigate("/checkout");
   };
 
@@ -44,7 +49,7 @@ export default function Cart() {
       ) : (
         <>
           <div className="space-y-4">
-            {cartItems.map((item) => (
+            {cartItems.filter(Boolean).map((item) => (
               <div
                 key={item.id}
                 className="flex items-center justify-between bg-white shadow-md rounded-lg p-4"

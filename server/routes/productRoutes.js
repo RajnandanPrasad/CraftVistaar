@@ -120,21 +120,26 @@ router.get("/", authMiddleware, async (req, res) => {
 // ✅ Create product (seller only)
 router.post("/", authMiddleware, sellerOnly, async (req, res) => {
   try {
-    const { title, description, price, images = [], category } = req.body;
+   const { title, description, price, images = [], category, stock } = req.body;
 
     if (!allowedCategories.includes(category)) {
       return res.status(400).json({ msg: "Invalid category selected." });
     }
 
-    const product = new Product({
-      title,
-      description,
-      price,
-      images,
-      category,
-      sellerId: req.user._id,
-      approved: false,
-    });
+if (stock === undefined || stock < 0) {
+  return res.status(400).json({ msg: "Valid stock is required" });
+}
+
+  const product = new Product({
+  title,
+  description,
+  price,
+  images,
+  category,
+  stock, // ✅ IMPORTANT
+  sellerId: req.user._id,
+  approved: false,
+});
 
     await product.save();
     res.status(201).json(product);
@@ -159,12 +164,13 @@ router.put("/:id", authMiddleware, sellerOnly, async (req, res) => {
       return res.status(400).json({ msg: "Invalid category selected." });
     }
 
-    const { title, description, price, images, category } = req.body;
+  const { title, description, price, images = [], category, stock } = req.body;
     product.title = title;
     product.description = description;
     product.price = price;
     product.images = images;
     product.category = category;
+    product.stock = stock;
 
     await product.save();
     res.json(product);
