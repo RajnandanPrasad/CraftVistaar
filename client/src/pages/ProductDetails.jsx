@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getProductImageUrl } from "../utils/imageHelpers";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getPublicProductById } from "../api/products";
@@ -85,15 +86,7 @@ const handleAddToCart = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <img
-                src={
-                  product.images && product.images.length > 0
-                    ? product.images[0].startsWith("http")
-                      ? product.images[0]
-                      : product.images[0].startsWith("/")
-                      ? product.images[0]
-                      : `http://localhost:5000/${product.images[0]}`
-                    : "/assets/logo.webp"
-                }
+                src={getProductImageUrl(product.images?.[0])}
                 alt={product.title}
                 className="w-full h-96 object-cover rounded-lg"
                 onError={(e) => {

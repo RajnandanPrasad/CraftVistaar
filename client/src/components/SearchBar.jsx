@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { filterHandmadeProducts } from "../utils/handmadeFilter";
 
 const SearchBar = () => {
   const [value, setValue] = useState("");
@@ -25,7 +26,7 @@ const SearchBar = () => {
           `${API_BASE}/api/products/search?q=${encodeURIComponent(value)}`
         );
 
-        setSuggestions(data.products || []);
+        setSuggestions(filterHandmadeProducts(data.products || []));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {

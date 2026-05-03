@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/api";
 import toast from "react-hot-toast";
+import { getProductImageUrl } from "../utils/imageHelpers";
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -164,7 +165,7 @@ export default function MyOrders() {
                     className="flex items-center gap-4 p-4 border rounded-xl bg-gray-50 hover:bg-gray-100 transition"
                   >
                     <img
-                      src={item.product?.images?.[0] || "/assets/logo.webp"}
+                      src={getProductImageUrl(item.product?.images?.[0])}
                       alt={item.product?.title}
                       className="w-20 h-20 object-cover rounded-lg border"
                       onError={(e) => (e.target.src = "/assets/logo.webp")}

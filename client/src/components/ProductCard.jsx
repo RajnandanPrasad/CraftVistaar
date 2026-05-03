@@ -1,81 +1,125 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import toast from "react-hot-toast";
+import logo from "../assets/logo.webp";
+import { getProductImageUrl } from "../utils/imageHelpers";
 
-
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, badge, variant, featured }) {
+  const navigate = useNavigate();
   const { addToCart } = useCart();
+  const isFeatured = variant === "featured" || featured;
 
-const handleAddToCart = () => {
-  if (product.stock === 0) {
-    toast.error("This product is out of stock");
-    return;
-  }
+  const handleAddToCart = () => {
+    if (product.stock === 0) {
+      toast.error("This product is out of stock");
+      return;
+    }
 
-  addToCart(product);
- 
-};
+    addToCart(product);
+  };
 
-  // FIX: Build correct image URL
   const imageUrl =
     product.images && product.images.length > 0
-      ? product.images[0].startsWith("http") // If full URL
-        ? product.images[0]
-        : product.images[0].startsWith("/") // If local asset
-        ? product.images[0]
-        : `http://localhost:5000/${product.images[0]}` // Backend uploads
-      : logo; // Fallback
+      ? getProductImageUrl(product.images[0])
+      : logo;
+
+  const discountPercent = product.discount
+    ? product.discount
+    : product.originalPrice
+    ? Math.max(10, Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100))
+    : null;
+
+  const rating =
+    product.rating && typeof product.rating === "object"
+      ? product.rating.rate || null
+      : typeof product.rating === "number"
+      ? product.rating
+      : null;
+
+  const desc = product.description?.trim();
+  const shortDesc = desc
+    ? desc.length > 80
+      ? `${desc.slice(0, 80)}...`
+      : desc
+    : "Premium handmade product";
+
+  const imageAspectClass = isFeatured ? "aspect-[4/4]" : "aspect-[4/3]";
 
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4 hover:shadow-lg transition-all duration-300">
-      <img
-        src={imageUrl}
-        alt={product.title}
-        className="w-full h-48 object-cover rounded-lg mb-4"
-        onError={(e) => {
-          e.target.src = logo;
-        }}
-      />
+    <article className="group bg-white rounded-xl shadow-sm overflow-hidden transition hover:shadow-lg">
+      <div className={`relative w-full overflow-hidden ${imageAspectClass}`}>
+        <img
+          src={imageUrl}
+          alt={product.title}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          onError={(e) => {
+            e.target.src = logo;
+          }}
+        />
 
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">{product.title}</h3>
-      <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
-
-      <div className="flex justify-between items-center mb-4">
-        <span className="text-xl font-bold text-green-600">₹{product.price}</span>
-        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-          {product.category}
-        </span>
+        <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-3">
+          {badge && (
+            <span className="rounded-full bg-amber-500 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
+              {badge}
+            </span>
+          )}
+          {discountPercent ? (
+            <span className="rounded-full bg-slate-950 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
+              {discountPercent}% off
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="flex gap-2">
-        <Link
-          to={`/product/${product._id}`}
-          className="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          View Details
-        </Link>
-        {product.stock === 0 && (
-  <p className="text-red-500 font-semibold mb-2">Out of Stock</p>
-)}
+      <div className="p-3 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {product.category && (
+            <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+              {product.category}
+            </span>
+          )}
+          {product.stock === 0 && (
+            <span className="rounded-full bg-rose-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-700">
+              Sold out
+            </span>
+          )}
+        </div>
 
-{product.stock > 0 && product.stock < 5 && (
-  <p className="text-orange-500 text-sm mb-2">
-    Only {product.stock} left!
-  </p>
-)}
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-slate-900">
+            {product.title}
+          </h3>
+          <p className="text-sm text-slate-500 mt-1">
+            {product.description || shortDesc}
+          </p>
+        </div>
 
-        <button
-  onClick={handleAddToCart}
-  disabled={product.stock === 0}
-  className={`px-4 py-2 rounded-lg transition ${
-    product.stock === 0
-      ? "bg-gray-400 cursor-not-allowed"
-      : "bg-green-600 text-white hover:bg-green-700"
-  }`}
->
-  {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
-</button>
+        <div className="px-3 pb-3 space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-green-600 font-bold">₹{product.price}</span>
+            {product.stock > 0 ? (
+              <button
+                onClick={handleAddToCart}
+                className="rounded-lg bg-black px-3 py-1 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                Add
+              </button>
+            ) : (
+              <span className="text-gray-400 text-sm">Out of stock</span>
+            )}
+          </div>
+
+          <button
+            onClick={() => navigate(`/product/${product._id || product.id}`)}
+            className="w-full text-sm text-blue-600 hover:underline"
+          >
+            View Details
+          </button>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }

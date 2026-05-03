@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getCurrentUser } from "../../api/auth";
 import { fetchSellerAnalytics } from "../../api/sellers";
 import toast from "react-hot-toast";
-import SellerSidebar from "../../components/seller/SellerSidebar";
+import SellerLayout from "../../components/layouts/SellerLayout";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function AdvancedAnalytics() {
@@ -33,10 +33,9 @@ export default function AdvancedAnalytics() {
   }
 
   return (
-    <div className="flex">
-      <SellerSidebar />
-      <div className="flex-1 p-6">
-        <h2 className="text-3xl font-bold mb-6">Advanced Analytics</h2>
+    <SellerLayout title="Advanced Analytics">
+      <div className="space-y-6">
+        
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -93,6 +92,6 @@ export default function AdvancedAnalytics() {
           )}
         </div>
       </div>
-    </div>
+    </SellerLayout>
   );
 }

@@ -1,1 +1,25 @@
 @import "tailwindcss";
+
+.input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.input:focus {
+  outline: none;
+  border-color: rgba(79, 70, 229, 0.7);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}

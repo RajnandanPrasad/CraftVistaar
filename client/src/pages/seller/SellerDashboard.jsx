@@ -2,20 +2,11 @@ import React, { useState, useEffect } from "react";
 import { getCurrentUser } from "../../api/auth";
 import API from "../../api/api";
 import toast from "react-hot-toast";
-import SellerSidebar from "../../components/seller/SellerSidebar";
+import SellerLayout from "../../components/layouts/SellerLayout";
 import SellerStatsCards from "../../components/seller/SellerStatsCards";
-const categories = [
-  "Clothing",
-  "Electronics",
-  "Grocery",
-  "Fitness",
-  "Toys",
-  "Home Decor",
-  "Footwear",
-  "Beauty",
-  "Kitchen",
-  "Accessories",
-];
+import { HANDMADE_CATEGORIES } from "../../utils/handmadeFilter";
+import { getProductImageUrl } from "../../utils/imageHelpers";
+const categories = [...HANDMADE_CATEGORIES];
 
 export default function SellerDashboard() {
   const [stats, setStats] = useState({ totalProducts: 0, totalOrders: 0, totalSales: 0 });
@@ -63,7 +54,7 @@ export default function SellerDashboard() {
   };
 
   fetchData();
-}, []); // ✅ EMPTY DEPENDENCY
+}, [user]);
   // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -154,53 +145,49 @@ export default function SellerDashboard() {
   }
 
   return (
-    <div className="flex">
-      <SellerSidebar />
-      <div className="flex-1 p-6">
-        <h2 className="text-3xl font-bold mb-6">Seller Dashboard </h2>
+    <SellerLayout title="Seller Dashboard">
+      <div className="space-y-6">
         <SellerStatsCards stats={stats} />
 
 
 
-        <div className="mt-8">
+        <div className="space-y-4">
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="w-full md:w-auto bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition"
           >
             {showForm ? "Cancel" : "Add New Product"}
           </button>
 
           {showForm && (
-            <form onSubmit={handleSubmit} className="mt-4 bg-gray-100 p-4 rounded">
+            <form onSubmit={handleSubmit} className="mt-4 bg-slate-50 p-4 rounded-3xl shadow-sm border border-slate-200">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
                   placeholder="Title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border border-slate-300 rounded-xl bg-white"
                 />
                 <input
                   type="number"
                   placeholder="Price"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border border-slate-300 rounded-xl bg-white"
                 />
                 <input
-  type="number"
-  placeholder="Stock Quantity"
-  value={formData.stock}
-  onChange={(e) =>
-    setFormData({ ...formData, stock: e.target.value })
-  }
-  className="w-full p-2 border rounded"
-  min="0" 
-/>
+                  type="number"
+                  placeholder="Stock Quantity"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                  className="w-full p-3 border border-slate-300 rounded-xl bg-white"
+                  min="0"
+                />
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border border-slate-300 rounded-xl bg-white"
                 >
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
@@ -213,30 +200,28 @@ export default function SellerDashboard() {
                   type="text"
                   placeholder="Image URL"
                   value={formData.images[0]}
-                  onChange={(e) =>
-                    setFormData({ ...formData, images: [e.target.value] })
-                  }
-                  className="w-full p-2 border rounded"
+                  onChange={(e) => setFormData({ ...formData, images: [e.target.value] })}
+                  className="w-full p-3 border border-slate-300 rounded-xl bg-white"
                 />
                 <textarea
                   placeholder="Description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full p-2 border rounded col-span-2"
-                  rows="3"
+                  className="w-full p-3 border border-slate-300 rounded-xl bg-white col-span-2"
+                  rows="4"
                 />
               </div>
-              <div className="flex gap-2 mt-4">
+              <div className="flex flex-col gap-3 mt-4 md:flex-row md:items-center">
                 <button
                   type="submit"
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                  className="w-full md:w-auto bg-green-600 text-white px-4 py-3 rounded-xl hover:bg-green-700 transition"
                 >
                   {editingProduct ? "Update Product" : "Add Product"}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                  className="w-full md:w-auto bg-slate-500 text-white px-4 py-3 rounded-xl hover:bg-slate-600 transition"
                 >
                   Cancel
                 </button>
@@ -244,38 +229,36 @@ export default function SellerDashboard() {
             </form>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
             {products.map((product) => (
-              <div key={product._id} className="bg-white p-4 rounded-lg shadow-md">
+              <div key={product._id} className="bg-white p-4 rounded-3xl shadow hover:shadow-md transition">
                 <img
-                  src={product.images[0] || "/assets/logo.webp"}
+                  src={getProductImageUrl(product.images?.[0])}
                   alt={product.title}
-                  className="w-full h-48 object-cover rounded mb-4"
+                  className="w-full h-40 object-cover rounded-2xl mb-4"
                 />
-                <h3 className="text-lg font-semibold">{product.title}</h3>
-                <p className="text-gray-600 text-sm mb-2">{product.description}</p>
+                <h3 className="text-lg font-semibold text-slate-900">{product.title}</h3>
+                <p className="text-slate-600 text-sm mb-2 line-clamp-2">{product.description}</p>
                 <p className="text-green-600 font-bold">₹{product.price}</p>
-                <p className="text-sm text-gray-700">
-  Stock: {product.stock}
-</p>
-                <p className="text-xs mt-1">
+                <p className="text-sm text-slate-700">Stock: {product.stock}</p>
+                <p className="text-xs mt-2">
                   {product.approved ? (
                     <span className="text-green-600 font-semibold">✅ Approved</span>
                   ) : (
                     <span className="text-yellow-600 font-semibold">⏳ Pending Approval</span>
                   )}
                 </p>
-                <p className="text-xs text-gray-500">{product.category}</p>
-                <div className="flex gap-2 mt-4">
+                <p className="text-xs text-slate-500 mt-1">{product.category}</p>
+                <div className="flex flex-wrap gap-2 mt-4">
                   <button
                     onClick={() => handleEdit(product)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                    className="flex-1 min-w-[120px] bg-blue-500 text-white px-3 py-2 rounded-xl text-sm hover:bg-blue-600 transition"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(product._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                    className="flex-1 min-w-[120px] bg-red-500 text-white px-3 py-2 rounded-xl text-sm hover:bg-red-600 transition"
                   >
                     Delete
                   </button>
@@ -291,6 +274,6 @@ export default function SellerDashboard() {
           )}
         </div>
       </div>
-    </div>
+    </SellerLayout>
   );
 }

@@ -3,6 +3,7 @@ import { useCart } from "../context/CartContext";
 import API from "../api/api";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { getProductImageUrl } from "../utils/imageHelpers";
 
 export default function Checkout() {
   const { cartItems, getTotalPrice, clearCart } = useCart();
@@ -363,7 +364,7 @@ export default function Checkout() {
               ) : (
                 cartItems.map((it) => (
                   <div key={it._id || it.id} className="flex items-center gap-3">
-                    <img src={it.image || it.images?.[0]} alt={it.name} className="w-14 h-14 object-cover rounded" />
+                    <img src={getProductImageUrl(it.image || it.images?.[0])} alt={it.name} className="w-14 h-14 object-cover rounded" />
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <div>

@@ -5,19 +5,23 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// ✅ Allowed categories (for validation)
+// ✅ Allowed handmade categories (for validation)
 const allowedCategories = [
-  "Clothing",
-  "Electronics",
-  "Grocery",
-  "Fitness",
-  "Toys",
+  "Pottery",
+  "Jewelry",
+  "Textiles",
   "Home Decor",
-  "Footwear",
-  "Beauty",
-  "Kitchen",
-  "Accessories",
+  "Wood Crafts",
+  "Handmade Gifts",
+  "Art & Paintings",
+  "Handwoven Items",
 ];
+
+const isBase64Image = (value) =>
+  typeof value === "string" && value.trim().startsWith("data:");
+
+const isValidImageEntry = (value) =>
+  typeof value === "string" && value.trim().length > 0;
 
 // ✅ NEW: Public search route (used by SearchBar + Products.jsx)
 router.get("/search", async (req, res) => {
@@ -120,26 +124,32 @@ router.get("/", authMiddleware, async (req, res) => {
 // ✅ Create product (seller only)
 router.post("/", authMiddleware, sellerOnly, async (req, res) => {
   try {
-   const { title, description, price, images = [], category, stock } = req.body;
+    const { title, description, price, images = [], category, stock } = req.body;
 
     if (!allowedCategories.includes(category)) {
       return res.status(400).json({ msg: "Invalid category selected." });
     }
 
-if (stock === undefined || stock < 0) {
-  return res.status(400).json({ msg: "Valid stock is required" });
-}
+    if (stock === undefined || stock < 0) {
+      return res.status(400).json({ msg: "Valid stock is required" });
+    }
 
-  const product = new Product({
-  title,
-  description,
-  price,
-  images,
-  category,
-  stock, // ✅ IMPORTANT
-  sellerId: req.user._id,
-  approved: false,
-});
+    if (!Array.isArray(images) || images.some((img) => !isValidImageEntry(img))) {
+      return res.status(400).json({
+        msg: "Product images must be URLs or file paths, not base64 data.",
+      });
+    }
+
+    const product = new Product({
+      title,
+      description,
+      price,
+      images,
+      category,
+      stock,
+      sellerId: req.user._id,
+      approved: true,
+    });
 
     await product.save();
     res.status(201).json(product);
@@ -164,7 +174,14 @@ router.put("/:id", authMiddleware, sellerOnly, async (req, res) => {
       return res.status(400).json({ msg: "Invalid category selected." });
     }
 
-  const { title, description, price, images = [], category, stock } = req.body;
+    const { title, description, price, images = [], category, stock } = req.body;
+
+    if (!Array.isArray(images) || images.some((img) => !isValidImageEntry(img))) {
+      return res.status(400).json({
+        msg: "Product images must be URLs or file paths, not base64 data.",
+      });
+    }
+
     product.title = title;
     product.description = description;
     product.price = price;

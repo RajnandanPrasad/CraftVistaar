@@ -3,6 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ProductCard from "../components/ProductCard";
 import { fetchProducts, searchProducts } from "../api/products";
+import { filterHandmadeProducts, matchesCategoryFilter } from "../utils/handmadeFilter";
 
 export default function Products() {
   const { t } = useTranslation();
@@ -25,12 +26,16 @@ export default function Products() {
           data = await fetchProducts();
         }
 
-        let filtered = data;
-        if (categoryName) {
-          filtered = data.filter(
-            (p) =>
-              p.category?.toLowerCase() ===
-              decodeURIComponent(categoryName).toLowerCase()
+        let filtered = filterHandmadeProducts(data || []);
+        const queryCategory = params.get("category");
+        const categoryFilter = categoryName || queryCategory;
+        const normalizedCategory = categoryFilter
+          ? decodeURIComponent(categoryFilter).trim()
+          : "";
+
+        if (normalizedCategory) {
+          filtered = filtered.filter((p) =>
+            matchesCategoryFilter(p.category, normalizedCategory)
           );
         }
         setProducts(filtered);
@@ -58,9 +63,9 @@ export default function Products() {
           🛍️{" "}
           {searchQuery
             ? `Search Results for "${searchQuery}"`
-            : categoryName
-            ? `${decodeURIComponent(categoryName)} Products`
-            : "Available Products"}
+            : categoryName || params.get("category")
+            ? `${decodeURIComponent(categoryName || params.get("category"))} Products`
+            : "All Handmade"}
         </h2>
         <p className="text-gray-600">
           {searchQuery

@@ -25,68 +25,64 @@ const Profile = () => {
     return <div className="text-center mt-10 text-red-500">Please Login First</div>;
   }
 
+  const totalOrdersCount = totalOrders || 0;
+  const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-";
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 py-10 px-4">
-
-      {/* Top Banner */}
-      <div className="max-w-4xl mx-auto bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white shadow-lg">
-        <h2 className="text-3xl font-bold">My Profile</h2>
-        <p className="text-sm opacity-90">Welcome, {user.name}</p>
-      </div>
-
-      {/* Profile Card */}
-      <div className="max-w-4xl mx-auto bg-white mt-[-40px] rounded-xl shadow-xl p-6">
-
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-
-          {/* Avatar */}
-          <div className="w-28 h-28 bg-blue-600 text-white rounded-full flex items-center justify-center text-4xl font-bold shadow-lg">
-            {user.name?.charAt(0).toUpperCase()}
-          </div>
-
-          {/* User Info */}
-          <div className="flex-1 text-center sm:text-left">
-            <h3 className="text-2xl font-semibold">{user.name}</h3>
-            <p className="text-gray-600">{user.email}</p>
-            <p className="text-sm text-gray-500 capitalize">Role: {user.role}</p>
-          </div>
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <div className="overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white shadow-2xl">
+          <h2 className="text-2xl font-bold md:text-3xl">My Profile</h2>
+          <p className="mt-2 text-sm md:text-base text-indigo-100/90">
+            Welcome back, {user.name}. Manage your account and track your orders from one place.
+          </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-          <div className="bg-blue-50 rounded-lg p-4 text-center">
-            <p className="text-xl font-bold text-blue-600">{totalOrders}</p>
-            <p className="text-sm text-gray-600">Total Orders</p>
+        <div className="mt-6 overflow-hidden rounded-3xl bg-white shadow-xl">
+          <div className="p-6 sm:p-8">
+            <div className="flex flex-col gap-6 rounded-[24px] bg-slate-50 p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-5">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-3xl font-bold text-white shadow-lg">
+                  {user.name?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-slate-900 md:text-2xl">{user.name}</h3>
+                  <p className="mt-1 text-sm text-slate-500 md:text-base">{user.email}</p>
+                  <p className="mt-2 text-sm text-slate-400">Role: {user.role}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <div className="rounded-3xl bg-white p-4 text-center shadow-sm">
+                  <p className="text-3xl font-bold text-blue-600">{totalOrdersCount}</p>
+                  <p className="mt-2 text-sm text-slate-500">Total Orders</p>
+                </div>
+                <div className="rounded-3xl bg-green-50 p-4 text-center shadow-sm">
+                  <p className="text-xl font-semibold text-green-600">Active</p>
+                  <p className="mt-2 text-sm text-slate-500">Account Status</p>
+                </div>
+                <div className="rounded-3xl bg-purple-50 p-4 text-center shadow-sm">
+                  <p className="text-xl font-semibold text-purple-600">{memberSince}</p>
+                  <p className="mt-2 text-sm text-slate-500">Member Since</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+              <button
+                onClick={() => navigate("/orders")}
+                className="w-full rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
+              >
+                View My Orders
+              </button>
+              <button
+                onClick={() => navigate("/")}
+                className="w-full rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 sm:w-auto"
+              >
+                Back to Home
+              </button>
+            </div>
           </div>
-
-          <div className="bg-green-50 rounded-lg p-4 text-center">
-            <p className="text-xl font-bold text-green-600">Active</p>
-            <p className="text-sm text-gray-600">Account Status</p>
-          </div>
-
-          <div className="bg-purple-50 rounded-lg p-4 text-center">
-            <p className="text-xl font-bold text-purple-600">
-              {new Date(user.createdAt || Date.now()).toLocaleDateString()}
-            </p>
-            <p className="text-sm text-gray-600">Member Since</p>
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
-          <button
-            onClick={() => navigate("/orders")}
-            className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-          >
-            View My Orders
-          </button>
-
-          <button
-            onClick={() => navigate("/")}
-            className="w-full sm:w-auto border border-gray-300 px-6 py-2 rounded-lg hover:bg-gray-100"
-          >
-            Back to Home
-          </button>
         </div>
       </div>
     </div>

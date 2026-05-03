@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { getCurrentUser } from "../api/auth";
 import toast from "react-hot-toast";
+import { getProductImageUrl } from "../utils/imageHelpers";
 
 export default function BuyPage() {
   const { id } = useParams();
@@ -55,7 +56,7 @@ export default function BuyPage() {
           {/* Product Image */}
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <img
-              src={product.images[0]}
+              src={getProductImageUrl(product.images?.[0])}
               alt={product.title}
               className="w-full h-96 object-cover rounded-lg"
               onError={(e) => {

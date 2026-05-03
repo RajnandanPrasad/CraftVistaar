@@ -2,19 +2,15 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { learnData } from "../../data/learnData";
-import SellerSidebar from "../../components/seller/SellerSidebar";
+import SellerLayout from "../../components/layouts/SellerLayout";
 
 export default function LearnPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex">
-      <SellerSidebar />
-      <div className="flex-1 p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{t("learn.title")}</h1>
-          <p className="text-gray-600">{t("learn.description")}</p>
-        </div>
+    <SellerLayout title={t("learn.title") || "Learn"}>
+      <div className="space-y-8">
+       
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {learnData.categories.map((category) => (
@@ -33,6 +29,6 @@ export default function LearnPage() {
           ))}
         </div>
       </div>
-    </div>
+    </SellerLayout>
   );
 }

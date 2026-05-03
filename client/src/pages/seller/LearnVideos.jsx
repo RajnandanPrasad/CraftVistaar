@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { learnData } from "../../data/learnData";
-import SellerSidebar from "../../components/seller/SellerSidebar";
+import SellerLayout from "../../components/layouts/SellerLayout";
 
 export default function LearnVideos() {
   const { t } = useTranslation();
@@ -12,22 +12,20 @@ export default function LearnVideos() {
 
   if (!category) {
     return (
-      <div className="flex">
-        <SellerSidebar />
-        <div className="flex-1 p-6">
+      <SellerLayout title={t("learn.title") || "Learn"}>
+        <div className="p-6">
           <h1 className="text-3xl font-bold mb-6">Category not found</h1>
           <Link to="/seller/learn" className="text-blue-600 hover:underline">
             {t("learn.back")}
           </Link>
         </div>
-      </div>
+      </SellerLayout>
     );
   }
 
   return (
-    <div className="flex">
-      <SellerSidebar />
-      <div className="flex-1 p-6">
+    <SellerLayout title={category.name}>
+      <div className="p-6">
         <div className="mb-6">
           <Link to="/seller/learn" className="text-blue-600 hover:underline mb-4 inline-block">
             ← {t("learn.back")}
@@ -62,6 +60,6 @@ export default function LearnVideos() {
           ))}
         </div>
       </div>
-    </div>
+    </SellerLayout>
   );
 }

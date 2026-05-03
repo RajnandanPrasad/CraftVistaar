@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-export default function SellerSidebar() {
+export default function SellerSidebar({ onLinkClick }) {
   const { t } = useTranslation();
   const location = useLocation();
 
@@ -16,17 +16,21 @@ export default function SellerSidebar() {
   ];
 
   return (
-    <div className="w-64 bg-gray-800 text-white min-h-screen p-4">
-      <h3 className="text-xl font-bold mb-6">{t("sellerPanel")}</h3>
+    <div className="w-64 bg-gray-900 text-white p-4 min-h-full">
+      <div className="mb-6 border-b border-white/10 pb-4">
+        <h3 className="text-xl font-bold">{t("sellerPanel")}</h3>
+        <p className="text-sm text-slate-300 mt-1">Control panel for your shop.</p>
+      </div>
       <ul className="space-y-2">
         {links.map((link) => (
           <li key={link.to}>
             <Link
               to={link.to}
-              className={`block py-2 px-4 rounded ${
+              onClick={onLinkClick}
+              className={`block rounded-xl px-4 py-3 text-sm font-medium transition ${
                 location.pathname === link.to
                   ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-700"
+                  : "text-slate-200 hover:bg-slate-800 hover:text-white"
               }`}
             >
               {link.label}

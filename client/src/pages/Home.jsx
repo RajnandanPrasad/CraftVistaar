@@ -1,209 +1,296 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
+import HeroCarousel from "../components/HeroCarousel";
 import ProductCard from "../components/ProductCard";
+import SectionHeader from "../components/SectionHeader";
+import ProductCardSkeleton from "../components/ProductCardSkeleton";
+import { fetchProducts } from "../api/products";
+import { filterHandmadeProducts, HANDMADE_CATEGORIES } from "../utils/handmadeFilter";
 import heroImg from "../assets/hero-handmade.jpg";
-import CategorySection from "../components/CategorySection";
-import MeetMakers from "../components/MeetMakers";
-import WhyChooseCraftKart from "../components/WhyChooseCraftKart";
-import Testimonials from "../components/Testimonials";
-import Newsletter from "../components/Newsletter";
-import CTASection from "../components/CTASection";
+import promo1 from "../assets/product1.jpg";
+import promo2 from "../assets/product3.jpg";
+import promo3 from "../assets/product5.jpg";
+import promo4 from "../assets/product2.jpg";
+import promo6 from "../assets/product4.jpg";
+
+const fallbackProducts = [
+  {
+    _id: "hm-1",
+    title: "Handwoven Cotton Cushion",
+    description: "Soft artisan stitching for cozy living spaces.",
+    price: 349,
+    category: "Textiles",
+    images: [promo4],
+    stock: 26,
+  },
+  {
+    _id: "hm-2",
+    title: "Wooden Spice Box Set",
+    description: "Hand-carved organizer crafted by local artisans.",
+    price: 499,
+    category: "Wood Crafts",
+    images: [promo6],
+    stock: 18,
+  },
+  {
+    _id: "hm-3",
+    title: "Pottery Tea Cup Duo",
+    description: "Glazed matte finish cups with natural textures.",
+    price: 299,
+    category: "Pottery",
+    images: [promo1],
+    stock: 14,
+  },
+  {
+    _id: "hm-4",
+    title: "Handmade Mirror Frame",
+    description: "Decorative wall accent with artisan detailing.",
+    price: 799,
+    category: "Home Decor",
+    images: [promo2],
+    stock: 9,
+  },
+];
+
+const promoCards = [
+  {
+    title: "Buy 1 Get 1 Ready",
+    subtitle: "Limited-time store offers",
+    image: promo3,
+  },
+  {
+    title: "Daily Flash Deals",
+    subtitle: "Up to 50% off curated crafts",
+    image: promo2,
+  },
+  {
+    title: "Under ₹299",
+    subtitle: "Affordable handmade favorites",
+    image: promo1,
+  },
+];
+
+const dealCards = [
+  {
+    title: "Up to 50% Off",
+    subtitle: "Selected craft essentials",
+    image: promo1,
+    accent: "bg-sky-100",
+  },
+  {
+    title: "Under ₹299",
+    subtitle: "Budget gifting made easy",
+    image: promo2,
+    accent: "bg-amber-100",
+  },
+  {
+    title: "Trending Now",
+    subtitle: "Top-rated handmade picks",
+    image: promo3,
+    accent: "bg-emerald-100",
+  },
+  {
+    title: "New in",
+    subtitle: "Fresh craft arrivals",
+    image: heroImg,
+    accent: "bg-violet-100",
+  },
+];
 
 const Home = () => {
-  const { t } = useTranslation();
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [activeIndex, setActiveIndex] = useState(null);
-  const [showAll, setShowAll] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const faqs = [
+  useEffect(() => {
+    let mounted = true;
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const productList = await fetchProducts();
+        if (!mounted) return;
+        const handmadeProducts = filterHandmadeProducts(productList || []);
+        setProducts(handmadeProducts.length > 0 ? handmadeProducts : fallbackProducts);
+        setCategories(HANDMADE_CATEGORIES);
+      } catch (err) {
+        console.error("Failed to load homepage data:", err);
+        if (!mounted) return;
+        setProducts(fallbackProducts);
+        setCategories(HANDMADE_CATEGORIES);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const trendingProducts = products.slice(0, 8);
+  const bestDeals = [...products]
+    .sort((a, b) => (a.price || 0) - (b.price || 0))
+    .slice(0, 8);
+  const topPicks = products.slice(2, 10);
+  const categoryCards = categories.length > 0 ? categories : HANDMADE_CATEGORIES;
+
+  const sectionCards = [
     {
-      question: t("howAreProductsMade"),
-      answer: t("productsMadeAnswer"),
+      title: "Trending Handmade",
+      subtitle: "Curated artisan favorites with premium, handcrafted style.",
+      actionLink: "/products",
+      actionText: "Shop trending",
+      badge: "Trending",
+      products: trendingProducts,
     },
     {
-      question: t("deliveryTime"),
-      answer: t("deliveryAnswer"),
+      title: "Best Artisan Picks",
+      subtitle: "Top-rated handmade treasures selected for talented creators.",
+      actionLink: "/products",
+      actionText: "Explore picks",
+      badge: "Best Seller",
+      products: bestDeals,
     },
     {
-      question: t("paymentMethods"),
-      answer: t("paymentAnswer"),
-    },
-    {
-      question: t("returnExchange"),
-      answer: t("returnAnswer"),
-    },
-    {
-      question: t("becomeSeller"),
-      answer: t("becomeSellerAnswer"),
-    },
-    {
-      question: t("approvalProcess"),
-      answer: t("approvalAnswer"),
+      title: "Handmade Deals",
+      subtitle: "Exclusive offers on premium craft pieces for everyday elegance.",
+      actionLink: "/products",
+      actionText: "View offers",
+      badge: "Limited Offer",
+      products: topPicks,
     },
   ];
 
-  const toggleFAQ = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
-
-  const displayedFAQs = showAll ? faqs : faqs.slice(0, 3);
-
-  useEffect(() => {
-    const storedProducts = JSON.parse(
-      localStorage.getItem("craftkart_products") || "[]"
-    );
-    setFeaturedProducts(storedProducts.slice(0, 4));
-  }, []);
-
   return (
-    <div className="bg-white text-gray-800">
-      {/* 🖼️ Hero Section */}
-      <section className="w-full min-h-[90vh] flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-pink-100 via-white to-blue-100 px-6 md:px-12 lg:px-20 py-16 relative overflow-hidden">
-        {/* Decorative Background Circles */}
-        <div className="absolute top-0 left-0 w-60 h-60 bg-blue-200 rounded-full blur-3xl opacity-50 animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-72 h-72 bg-pink-200 rounded-full blur-3xl opacity-40 animate-pulse"></div>
-
-        {/* Left Content */}
-        <div className="flex flex-col gap-6 max-w-xl text-center md:text-left z-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 leading-tight">
-            {t("bringHandmadeElegance")}
-          </h1>
-
-          <p className="text-gray-600 text-lg md:text-xl leading-relaxed">
-            {t("exploreUniqueCrafts")}
-          </p>
-
-          <div className="flex justify-center md:justify-start gap-4">
-            <Link
-              to="/products"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg transition-transform transform hover:scale-105"
-            >
-              {t("shopNow")}
-            </Link>
-
-            <Link
-              to="/about"
-              className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-xl font-semibold transition-transform transform hover:scale-105"
-            >
-              {t("learnMore")}
-            </Link>
-          </div>
-        </div>
-
-        {/* Hero Image */}
-        <div className="mt-10 md:mt-0 w-full md:w-1/2 flex justify-center z-10">
-          <img
-            src={heroImg}
-            alt="Handmade Crafts"
-            className="rounded-3xl shadow-2xl w-[90%] hover:scale-105 transition-transform duration-500"
-          />
-        </div>
-      </section>
-
-      {/* 🛍️ Featured Products Section */}
-      <section className="p-6 md:p-12 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-              {t("featuredProducts")}
-            </h2>
-            <p className="text-gray-500 text-lg">
-              {t("handpickedSelection")}
-            </p>
-            <div className="mt-2 w-24 h-1 bg-blue-500 mx-auto rounded-full"></div>
+    <div className="bg-slate-50 text-slate-900">
+      <section className="relative overflow-hidden bg-white pt-0 pb-10">
+        <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-sky-100 to-transparent" />
+        <div className="relative mx-auto grid max-w-[1400px] grid-cols-1 gap-4 px-4 pb-10 md:px-6 lg:grid-cols-3 lg:pb-12">
+          <div className="lg:col-span-2 w-full">
+            <HeroCarousel />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts.length > 0 ? (
-              featuredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="transform transition-transform hover:scale-105"
-                >
-                  <ProductCard product={product} />
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-600 col-span-full">
-                {t("noFeaturedProducts")}
-              </p>
-            )}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link
-              to="/products"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-semibold shadow-md transition-transform transform hover:scale-105"
-            >
-              {t("viewAllProducts")}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 💬 FAQ Section */}
-      <section className="bg-gradient-to-r from-blue-50 via-white to-pink-50 py-16 px-6 md:px-12 lg:px-20">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            {t("frequentlyAskedQuestions")}
-          </h2>
-          <p className="text-gray-600 mb-10 text-lg">
-            {t("findQuickAnswers")}
-          </p>
-
-          <div className="text-left space-y-4">
-            {displayedFAQs.map((faq, index) => (
-              <motion.div
-                key={index}
-                className="bg-white shadow-md p-5 rounded-2xl hover:shadow-lg transition"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+          <div className="flex w-full flex-col gap-4">
+            {promoCards.map((card) => (
+              <div
+                key={card.title}
+                className="group relative overflow-hidden rounded-[28px] bg-white shadow-lg transition hover:-translate-y-1"
               >
-                <button
-                  onClick={() => toggleFAQ(index)}
-                  className="w-full flex justify-between items-center text-left text-xl font-semibold text-blue-700 focus:outline-none"
-                >
-                  {faq.question}
-                  <span className="text-gray-500 text-2xl">
-                    {activeIndex === index ? "−" : "+"}
-                  </span>
-                </button>
-
-                {activeIndex === index && (
-                  <motion.p
-                    className="mt-2 text-gray-700 text-base leading-relaxed"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {faq.answer}
-                  </motion.p>
-                )}
-              </motion.div>
+                <img
+                  src={card.image}
+                  alt={card.title}
+                  className="h-40 w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className="bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent px-5 py-4 text-white">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-300">Limited Offer</p>
+                  <h2 className="mt-2 text-xl font-semibold leading-tight">{card.title}</h2>
+                  <p className="mt-1 text-sm text-slate-200">{card.subtitle}</p>
+                </div>
+              </div>
             ))}
           </div>
-
-          {!showAll && (
-            <button
-              onClick={() => setShowAll(true)}
-              className="mt-8 px-8 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition"
-            >
-              View All FAQs
-            </button>
-          )}
         </div>
-
       </section>
-      <CategorySection />
-<MeetMakers />
-<WhyChooseCraftKart />
-<Testimonials />
-<Newsletter />
-<CTASection />
 
+      <main className="mx-auto max-w-[1400px] px-4 pb-16 md:px-6">
+        <section className="mt-8 grid gap-4 lg:grid-cols-4">
+          {dealCards.map((deal) => (
+            <div
+              key={deal.title}
+              className={`group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${deal.accent}`}
+            >
+              <div className="h-40 overflow-hidden">
+                <img
+                  src={deal.image}
+                  alt={deal.title}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">{deal.subtitle}</p>
+                <h3 className="mt-3 text-xl font-semibold text-slate-900">{deal.title}</h3>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {sectionCards.map((section) => (
+          <section key={section.title} className="mt-10">
+            <SectionHeader
+              title={section.title}
+              subtitle={section.subtitle}
+              actionText={section.actionText}
+              actionLink={section.actionLink}
+            />
+            <div className="mt-6">
+              {loading ? (
+                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {Array.from({ length: 10 }).map((_, idx) => (
+                    <div key={idx} className={idx === 0 ? "col-span-2 row-span-2" : "col-span-1"}>
+                      <ProductCardSkeleton />
+                    </div>
+                  ))}
+                </div>
+              ) : section.products.length > 0 ? (
+                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {section.products.slice(0, 10).map((product, index) => {
+                    const isFeatured = index === 0;
+                    return (
+                      <div
+                        key={product._id || product.id}
+                        className={isFeatured ? "col-span-2 row-span-2" : "col-span-1"}
+                      >
+                        <ProductCard product={product} badge={section.badge} featured={isFeatured} />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-[28px] bg-white p-6 text-slate-600 shadow-sm">
+                  No products available in this section.
+                </div>
+              )}
+            </div>
+          </section>
+        ))}
+
+        <section className="mt-10 rounded-[32px] bg-white p-6 shadow-sm">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-500">Collections</p>
+              <h2 className="mt-2 text-3xl font-bold text-slate-900">Browse by category</h2>
+            </div>
+            <p className="text-sm text-slate-500 max-w-xl">
+              Explore popular collections across home decor, gifting, jewellery and more.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {categoryCards.map((category, idx) => (
+              <Link
+                key={category}
+                to={`/category/${encodeURIComponent(category)}`}
+                className="group overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 transition hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                <div className="h-48 overflow-hidden bg-slate-200">
+                  <img
+                    src={[promo1, promo2, promo3, heroImg, promo1, promo2][idx]}
+                    alt={category}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-5">
+                  <p className="text-sm font-semibold text-slate-700">{category}</p>
+                  <p className="mt-2 text-sm text-slate-500">Shop unique handmade picks for every style.</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 };
