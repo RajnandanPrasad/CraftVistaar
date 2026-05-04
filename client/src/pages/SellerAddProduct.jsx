@@ -276,11 +276,25 @@ export default function SellerAddProduct() {
               disabled={uploading}
               className="w-full p-4 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
             />
-            {formData.model3D && (
+{formData.model3D && (
               <p className="mt-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg">
                 Model ready: {formData.model3D.split('/').pop()}
               </p>
             )}
+          </div>
+
+          {/* Direct 3D Model URL Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">3D Model URL (.glb) - OR upload above</label>
+            <input
+              type="url"
+              name="model3D"
+              placeholder="https://example.com/model.glb"
+              value={formData.model3D || ""}
+              onChange={handleChange}
+              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="mt-1 text-xs text-gray-500">Paste .glb URL directly or upload file above</p>
           </div>
 
           <button 

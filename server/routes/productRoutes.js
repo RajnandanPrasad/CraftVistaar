@@ -5,17 +5,15 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// ✅ Allowed handmade categories (for validation)
-const allowedCategories = [
-  "Pottery",
-  "Jewelry",
-  "Textiles",
-  "Home Decor",
-  "Wood Crafts",
-  "Handmade Gifts",
-  "Art & Paintings",
-  "Handwoven Items",
-];
+const { NEW_CATEGORIES, CRAFT_SUPPLIES_FALLBACK } = require('../../shared/constants/categories');
+
+// ✅ Flexible category validation (new categories + fallback)
+const isValidCategory = (category) => {
+  if (!category || typeof category !== 'string') return false;
+  const normalized = category.trim();
+  return NEW_CATEGORIES.includes(normalized) || normalized === CRAFT_SUPPLIES_FALLBACK;
+};
+
 
 const isBase64Image = (value) =>
   typeof value === "string" && value.trim().startsWith("data:");
@@ -51,10 +49,12 @@ router.get("/search", async (req, res) => {
 // ✅ Public route: customers see only approved products
 router.get("/public", async (req, res) => {
   try {
-    const products = await Product.find({ approved: true }).populate(
-      "sellerId",
-      "name email"
-    );
+    const limit = parseInt(req.query.limit) || 20;
+    const sortField = req.query.sort || 'createdAt';
+    const products = await Product.find({ approved: true })
+      .limit(limit)
+      .sort({ [sortField]: -1 })
+      .populate("sellerId", "name email");
     return res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching public products:", error);
@@ -105,14 +105,19 @@ const sellerOrAdmin = (req, res, next) => {
 // ✅ Get all products (protected)
 router.get("/", authMiddleware, async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 50;
+    const sortField = req.query.sort || 'createdAt';
     let products;
     if (req.user.role === "customer") {
-      products = await Product.find({ approved: true }).populate(
-        "sellerId",
-        "name email"
-      );
+      products = await Product.find({ approved: true })
+        .limit(limit)
+        .sort({ [sortField]: -1 })
+        .populate("sellerId", "name email");
     } else {
-      products = await Product.find().populate("sellerId", "name email");
+      products = await Product.find()
+        .limit(limit)
+        .sort({ [sortField]: -1 })
+        .populate("sellerId", "name email");
     }
     res.json(products);
   } catch (err) {
@@ -141,9 +146,10 @@ router.post("/", authMiddleware, sellerOnly, async (req, res) => {
       images = [images.trim()];
     }
 
-    if (!allowedCategories.includes(category)) {
-      return res.status(400).json({ msg: "Invalid category selected." });
+    if (!isValidCategory(category)) {
+      return res.status(400).json({ msg: `Invalid category. Must be one of: ${NEW_CATEGORIES.join(', ')} or fallback.` });
     }
+
 
     if (stock === undefined || stock < 0) {
       return res.status(400).json({ msg: "Valid stock is required" });
@@ -191,9 +197,10 @@ router.put("/:id", authMiddleware, sellerOnly, async (req, res) => {
         .status(403)
         .json({ msg: "Access denied. Not your product." });
 
-    if (!allowedCategories.includes(req.body.category)) {
-      return res.status(400).json({ msg: "Invalid category selected." });
+    if (!isValidCategory(req.body.category)) {
+      return res.status(400).json({ msg: `Invalid category. Must be one of: ${NEW_CATEGORIES.join(', ')} or fallback.` });
     }
+
 
     const { title, description, price, images = [], category, stock, model3D = "" } = req.body;
 

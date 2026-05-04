@@ -12,7 +12,7 @@ const seed = async () => {
       title: 'AR Ready Handmade Pottery Vase',
       description: 'Test product with 3D AR model for preview.',
       price: 599,
-      category: 'Pottery',
+      category: 'Home & Decor',
       images: ['https://images.unsplash.com/photo-1558618047-3c8c76bbb17e?ixlib=rb-4.0.3&fit=crop&w=1000&q=80'],
       model3D: '/models/sample-pottery.glb',
       stock: 10,

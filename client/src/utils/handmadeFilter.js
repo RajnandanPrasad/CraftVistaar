@@ -1,30 +1,15 @@
-export const HANDMADE_CATEGORIES = [
-  "Pottery",
-  "Jewelry",
-  "Textiles",
-  "Home Decor",
-  "Wood Crafts",
-  "Handmade Gifts",
-  "Art & Paintings",
-  "Handwoven Items",
+import { NEW_CATEGORIES, CRAFT_SUPPLIES_FALLBACK } from '../constants/categories';
+
+export const HANDMADE_CATEGORIES = NEW_CATEGORIES.filter(cat => cat !== "For You"); // Exclude UI-only "For You"
+export const HANDMADE_CATEGORY_KEYWORDS = [
+  "jewelry", "accessories", "clothing", "textile", "home", "decor", "kitchen", 
+  "art", "collectible", "bag", "footwear", "beauty", "personal", "toy", "baby",
+  "craft", "supply", "spiritual", "festive", "gift", "custom", "personalized",
+  "food", "beverage", "handmade", "artisan", "pottery", "wood", "painting", "woven"
 ];
 
-const HANDMADE_CATEGORY_KEYWORDS = [
-  "pottery",
-  "jewelry",
-  "textile",
-  "textiles",
-  "wood",
-  "handmade",
-  "artisan",
-  "decor",
-  "craft",
-  "gift",
-  "painting",
-  "woven",
-];
+export const HANDMADE_CATEGORY_DISPLAY = NEW_CATEGORIES;
 
-export const HANDMADE_CATEGORY_DISPLAY = [...HANDMADE_CATEGORIES];
 
 const normalizeText = (value) =>
   value
