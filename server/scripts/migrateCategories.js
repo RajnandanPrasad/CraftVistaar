@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const connectDB = require('../config/db');
 const Product = require('../models/Product');
-const { CATEGORY_MAPPING, NEW_CATEGORIES, CRAFT_SUPPLIES_FALLBACK } = require('../../shared/constants/categories');
+const { CATEGORY_MAPPING, NEW_CATEGORIES, CRAFT_SUPPLIES_FALLBACK } = require('../constants/categories');
 
 connectDB();
 

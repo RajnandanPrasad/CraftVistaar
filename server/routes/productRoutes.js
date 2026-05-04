@@ -5,7 +5,7 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-const { NEW_CATEGORIES, CRAFT_SUPPLIES_FALLBACK } = require('../../shared/constants/categories');
+const { NEW_CATEGORIES, CRAFT_SUPPLIES_FALLBACK } = require('../constants/categories');
 
 // ✅ Flexible category validation (new categories + fallback)
 const isValidCategory = (category) => {
