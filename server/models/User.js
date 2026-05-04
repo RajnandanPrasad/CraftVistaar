@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema(
       shopLicenseUrl: String,
       extraDocs: [String],
     },
+    coins: {
+  type: Number,
+  default: 0
+},
 
     // ⭐ Verification audit
     verificationReason: { type: String }, // for rejection

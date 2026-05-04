@@ -69,7 +69,7 @@ router.post('/', authMiddleware, async (req, res) => {
       return res.status(403).json({ msg: 'Only customers can place orders' });
     }
 
-    const { items, shippingAddress, paymentMethod } = req.body;
+const { items, shippingAddress, paymentMethod, coinsToUse = 0 } = req.body;
     if (!items || items.length === 0)
       return res.status(400).json({ msg: 'No items in order' });
 
@@ -90,7 +90,24 @@ router.post('/', authMiddleware, async (req, res) => {
       (sum, i) => sum + i.price * i.quantity,
       0
     );
+// 🎁 APPLY COINS
+let finalAmount = totalAmount;
 
+if (coinsToUse > 0) {
+  const user = await User.findById(req.user._id);
+
+  const maxUsableCoins = user.coins;
+
+  const coins = Math.min(coinsToUse, maxUsableCoins);
+
+  const discount = Math.floor(coins / 10); // 10 coins = ₹1
+
+  finalAmount = Math.max(0, totalAmount - discount);
+
+  // deduct coins
+  user.coins -= coins;
+  await user.save();
+}
 
 for (const item of items) {
   const product = await Product.findById(item.product);
@@ -114,7 +131,7 @@ for (const item of items) {
     const newOrder = new Order({
       customer: req.user._id,
       items: itemsWithSeller,
-      totalAmount,
+     totalAmount: finalAmount,
       shippingAddress,
       paymentMethod,
       paymentStatus: paymentMethod === "razorpay" ? "paid" : "pending"
@@ -224,7 +241,20 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (!order)
       return res.status(404).json({ msg: 'Order not found' });
 
-    order.status = status;
+    const oldStatus = order.status; // ✅ ADD THIS
+
+order.status = status;
+
+// 🎁 ADD THIS BLOCK (SAFE)
+if (status === "delivered" && oldStatus !== "delivered") {
+  const coinsEarned = Math.floor(order.totalAmount / 100) * 5;
+
+  await User.findByIdAndUpdate(order.customer, {
+    $inc: { coins: coinsEarned }
+  });
+}
+    
+
 
     // ✅ invoice generation
     if (status === "delivered" && !order.invoice?.generated) {
@@ -290,6 +320,14 @@ router.patch('/seller/update-status/:id', authMiddleware, async (req, res) => {
 const oldStatus = order.status; // ⭐ track previous status
 
 order.status = status;
+// 🎁 ADD THIS (SAFE)
+if (status === "delivered" && oldStatus !== "delivered") {
+  const coinsEarned = Math.floor(order.totalAmount / 100) * 5;
+
+  await User.findByIdAndUpdate(order.customer, {
+    $inc: { coins: coinsEarned }
+  });
+}
 
 // 🔄 RESTORE STOCK IF CANCELLED
 if (status === "cancelled" && oldStatus !== "cancelled") {

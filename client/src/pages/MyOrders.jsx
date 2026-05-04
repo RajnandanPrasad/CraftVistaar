@@ -102,6 +102,7 @@ export default function MyOrders() {
           const id = order._id;
           const status = order.status || "pending";
           const statusIndex = getStatusIndex(status);
+          const coinsEarned = Math.floor(order.totalAmount / 100) * 5;
 
           return (
             <div
@@ -127,7 +128,19 @@ export default function MyOrders() {
                 >
                   {status.toUpperCase()}
                 </span>
+  
               </div>
+                            <div className="mt-2">
+  {status === "delivered" ? (
+    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+      🎉 +{coinsEarned} Coins Earned
+    </span>
+  ) : (
+    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">
+      🪙 {coinsEarned} Coins (on delivery)
+    </span>
+  )}
+</div>
 
               {/* Timeline */}
               <div className="flex items-center justify-between px-8 py-6">
