@@ -10,6 +10,8 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
+  const [coinsToUse, setCoinsToUse] = useState(0);
+const [userCoins, setUserCoins] = useState(0);
   const [address, setAddress] = useState({
     fullName: "",
     phone: "",
@@ -39,6 +41,7 @@ export default function Checkout() {
         if (userRes.status === "fulfilled" && userRes.value?.data) {
           fetchedUser = userRes.value.data;
           setUser(fetchedUser);
+          setUserCoins(fetchedUser.coins || 0);
         }
 
         if (addrRes.status === "fulfilled" && addrRes.value?.data) {
@@ -88,6 +91,7 @@ export default function Checkout() {
       items: formattedItems,
       shippingAddress: address,
       paymentMethod,
+       coinsToUse,
     });
   };
 
@@ -139,7 +143,9 @@ export default function Checkout() {
       }
 
       // create razorpay order on server
-      const rp = await API.post("/orders/create-payment", { amount: getTotalPrice() });
+      const rp = await API.post("/orders/create-payment", { 
+  amount: total 
+});
       const { orderId, amount } = rp.data;
       if (!orderId) {
         toast.error("Failed to create Razorpay order");
@@ -225,8 +231,9 @@ export default function Checkout() {
 
   // UI helpers
   const shippingPrice = 0;
-  const subtotal = getTotalPrice();
-  const total = subtotal + shippingPrice;
+const discount = Math.floor(coinsToUse / 10);
+const subtotal = getTotalPrice();
+const total = Math.max(0, subtotal + shippingPrice - discount);
 
   if (loading) {
     return (
@@ -388,6 +395,41 @@ export default function Checkout() {
         <div className="space-y-4">
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-semibold mb-4">Payment & Summary</h3>
+            <div className="bg-yellow-50 p-4 rounded-lg mb-4">
+  <p className="font-semibold text-yellow-700">
+    🪙 Available Coins: {userCoins}
+  </p>
+
+  <input
+    type="text"
+    min="0"
+    max={userCoins}
+    value={coinsToUse}
+onChange={(e) => {
+  let value = e.target.value;
+
+  // remove non-numbers
+  value = value.replace(/[^0-9]/g, "");
+
+  // remove leading zeros
+  value = value.replace(/^0+/, "");
+
+  if (value === "") value = "0";
+
+  let num = Number(value);
+
+  if (num > userCoins) num = userCoins;
+
+  setCoinsToUse(num);
+}}
+    placeholder="Enter coins to use"
+    className="mt-2 w-full border p-2 rounded"
+  />
+
+  <p className="text-sm text-gray-500 mt-1">
+    10 coins = ₹1
+  </p>
+</div>
 
             {/* Payment method cards */}
             <div className="space-y-3">
