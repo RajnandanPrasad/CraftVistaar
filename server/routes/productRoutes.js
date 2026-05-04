@@ -124,7 +124,22 @@ router.get("/", authMiddleware, async (req, res) => {
 // ✅ Create product (seller only)
 router.post("/", authMiddleware, sellerOnly, async (req, res) => {
   try {
-    const { title, description, price, images = [], category, stock } = req.body;
+    let { title, description, price, images = [], category, stock, model3D = "" } = req.body;
+
+    // Safe Number conversion
+    price = Number(price);
+    if (isNaN(price) || price < 0) {
+      return res.status(400).json({ msg: "Valid price (number >= 0) is required" });
+    }
+    stock = Number(stock);
+    if (isNaN(stock)) {
+      return res.status(400).json({ msg: "Valid stock (number) is required" });
+    }
+
+    // Handle single image string → array
+    if (typeof images === 'string' && images.trim()) {
+      images = [images.trim()];
+    }
 
     if (!allowedCategories.includes(category)) {
       return res.status(400).json({ msg: "Invalid category selected." });
@@ -134,9 +149,9 @@ router.post("/", authMiddleware, sellerOnly, async (req, res) => {
       return res.status(400).json({ msg: "Valid stock is required" });
     }
 
-    if (!Array.isArray(images) || images.some((img) => !isValidImageEntry(img))) {
+    if (!Array.isArray(images) || images.length === 0 || images.some((img) => !isValidImageEntry(img))) {
       return res.status(400).json({
-        msg: "Product images must be URLs or file paths, not base64 data.",
+        msg: "At least one valid product image URL or path is required (no base64).",
       });
     }
 
@@ -147,6 +162,7 @@ router.post("/", authMiddleware, sellerOnly, async (req, res) => {
       images,
       category,
       stock,
+      model3D: typeof model3D === "string" ? model3D.trim() : "",
       sellerId: req.user._id,
       approved: true,
     });
@@ -155,6 +171,11 @@ router.post("/", authMiddleware, sellerOnly, async (req, res) => {
     res.status(201).json(product);
   } catch (err) {
     console.error("Error creating product:", err);
+    // Mongoose validation errors
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ msg: messages.join(', ') });
+    }
     res.status(500).json({ msg: "Server error" });
   }
 });
@@ -174,7 +195,7 @@ router.put("/:id", authMiddleware, sellerOnly, async (req, res) => {
       return res.status(400).json({ msg: "Invalid category selected." });
     }
 
-    const { title, description, price, images = [], category, stock } = req.body;
+    const { title, description, price, images = [], category, stock, model3D = "" } = req.body;
 
     if (!Array.isArray(images) || images.some((img) => !isValidImageEntry(img))) {
       return res.status(400).json({
@@ -188,6 +209,7 @@ router.put("/:id", authMiddleware, sellerOnly, async (req, res) => {
     product.images = images;
     product.category = category;
     product.stock = stock;
+    product.model3D = typeof model3D === "string" ? model3D.trim() : product.model3D;
 
     await product.save();
     res.json(product);
@@ -223,6 +245,45 @@ router.delete("/:id", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("Error deleting product:", err);
     res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// ✅ SINGLE UPLOAD ROUTE as per requirements
+const productUpload = require('../middleware/productUpload');
+
+router.post('/upload', authMiddleware, sellerOnly, (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ msg: 'File too large. Max 10MB.' });
+    }
+    return res.status(400).json({ msg: err.message });
+  } else if (err) {
+    return res.status(400).json({ msg: err.message });
+  }
+  next();
+}, productUpload, (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ msg: 'No file uploaded' });
+    }
+
+    let filePath;
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    
+    if (ext === '.glb' || ext === '.gltf') {
+      filePath = `/models/${req.file.filename}`;
+    } else {
+      filePath = `/uploads/${req.file.filename}`;
+    }
+
+    res.json({ 
+      success: true, 
+      path: filePath,
+      url: `${req.protocol}://${req.get('host')}${filePath}`
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ msg: 'Upload failed' });
   }
 });
 

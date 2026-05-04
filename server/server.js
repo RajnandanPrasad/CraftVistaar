@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require("cors");
+const path = require('path');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -30,6 +31,8 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/seller", require('./routes/sellerRoutes'));  // added
 app.use("/uploads", express.static("uploads"));
+app.use("/models", express.static(path.join(__dirname, "ar-models")));
+app.use("/ar-models", express.static(path.join(__dirname, "ar-models")));
 
 // Error handler
 app.use((err, req, res, next) => {

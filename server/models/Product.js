@@ -14,6 +14,11 @@ const productSchema = new mongoose.Schema({
 
   images: [{ type: String }],
 
+  model3D: {
+    type: String,
+    default: ""
+  },
+
   sellerId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User', 
