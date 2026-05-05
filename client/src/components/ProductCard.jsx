@@ -30,12 +30,7 @@ export default function ProductCard({ product, badge, variant, featured }) {
     ? Math.max(10, Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100))
     : null;
 
-  const rating =
-    product.rating && typeof product.rating === "object"
-      ? product.rating.rate || null
-      : typeof product.rating === "number"
-      ? product.rating
-      : null;
+const rating = product.rating || 0;
 
   const desc = product.description?.trim();
   const shortDesc = desc
@@ -122,6 +117,14 @@ export default function ProductCard({ product, badge, variant, featured }) {
                 </span>
               )}
             </div>
+            <div className="flex items-center gap-2">
+  <span className="bg-green-600 text-white px-2 py-0.5 rounded text-xs font-bold">
+    {rating.toFixed(1)} ⭐
+  </span>
+  <span className="text-xs text-gray-500">
+    ({product.numReviews || 0})
+  </span>
+</div>
             {product?.stock > 0 ? (
               <button
                 onClick={handleAddToCart}

@@ -33,6 +33,7 @@ app.use("/api/seller", require('./routes/sellerRoutes'));  // added
 app.use("/uploads", express.static("uploads"));
 app.use("/models", express.static(path.join(__dirname, "ar-models")));
 app.use("/ar-models", express.static(path.join(__dirname, "ar-models")));
+app.use("/api/reviews", require("./routes/reviewRoutes"));
 
 // Error handler
 app.use((err, req, res, next) => {

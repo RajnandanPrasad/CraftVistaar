@@ -13,8 +13,13 @@ export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const API_BASE = import.meta.env.VITE_API_BASE;
 
   const [product, setProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
+const [rating, setRating] = useState(0);
+const [comment, setComment] = useState("");
+const [canReview, setCanReview] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAR, setShowAR] = useState(false);
@@ -40,6 +45,53 @@ export default function ProductDetails() {
 
     fetchProduct();
   }, [id]);
+  useEffect(() => {
+  const fetchReviews = async () => {
+   const API_BASE = import.meta.env.VITE_API_BASE;
+
+const res = await fetch(`${API_BASE}/api/reviews/${id}`);
+    const data = await res.json();
+    setReviews(data);
+  };
+
+  fetchReviews();
+}, [id]);
+useEffect(() => {
+  const checkPurchase = async () => {
+    const token = localStorage.getItem("craftkart_token");
+
+    if (!token) return;
+
+  const API_BASE = import.meta.env.VITE_API_BASE;
+
+const res = await fetch(`${API_BASE}/api/orders/my-orders`, {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
+
+    const orders = await res.json();
+
+    console.log("ORDERS:", orders);
+
+    const hasBought = orders.some(order =>
+      order.status?.toLowerCase() === "delivered" &&
+      order.items.some(item => {
+        const productId =
+          typeof item.product === "object"
+            ? item.product._id
+            : item.product;
+
+        return String(productId) === String(id);
+      })
+    );
+
+    setCanReview(hasBought);
+  };
+   checkPurchase(); 
+
+ 
+}, [id]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -357,6 +409,107 @@ export default function ProductDetails() {
           </div>
         )}
 
+{/* ⭐ REVIEWS SECTION */}
+<div className="mt-12 bg-white p-6 rounded-2xl shadow-lg">
+  <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
+{!localStorage.getItem("craftkart_token") && (
+  <p className="text-gray-500 mb-4">
+    Please login to write a review
+  </p>
+)}
+
+{localStorage.getItem("craftkart_token") && !canReview && (
+  <p className="text-gray-500 mb-4">
+    You can review this product after it is delivered
+  </p>
+)}
+
+  {/* Write Review */}
+ {canReview && localStorage.getItem("craftkart_token") && (
+    <div className="mb-6">
+      <h3 className="font-semibold mb-2">Write a Review</h3>
+
+      <select
+        onChange={(e) => setRating(Number(e.target.value))}
+        className="border p-2 rounded mb-2"
+      >
+        <option value="">Select Rating</option>
+        <option value="1">1 ⭐</option>
+        <option value="2">2 ⭐</option>
+        <option value="3">3 ⭐</option>
+        <option value="4">4 ⭐</option>
+        <option value="5">5 ⭐</option>
+      </select>
+
+      <textarea
+        placeholder="Write your review..."
+        className="w-full border p-2 rounded mb-2"
+        onChange={(e) => setComment(e.target.value)}
+      />
+
+      <button
+        onClick={async () => {
+          if (!rating || !comment) {
+  alert("Please add rating and comment");
+  return;
+}
+          const token = localStorage.getItem("craftkart_token");
+
+          const API_BASE = import.meta.env.VITE_API_BASE;
+
+const res = await fetch(`${API_BASE}/api/reviews`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              productId: id,
+              rating,
+              comment
+            })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            alert("Review added!");
+            setComment("");
+setRating(0);
+
+// refresh reviews without reload
+const res2 = await fetch(`${API_BASE}/api/reviews/${id}`)
+const updated = await res2.json();
+setReviews(updated);
+
+// hide form after submit
+setCanReview(false);
+          } else {
+            alert(data.msg);
+          }
+        }}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Submit Review
+      </button>
+    </div>
+  )}
+
+  {/* Reviews List */}
+  {reviews.length === 0 ? (
+    <p>No reviews yet</p>
+  ) : (
+    reviews.map((r) => (
+      <div key={r._id} className="border-b py-3">
+        <p className="font-semibold">{r.customerId.name}</p>
+       <p className="text-yellow-500 font-semibold">
+  {"⭐".repeat(r.rating)}
+</p>
+        <p className="text-gray-600">{r.comment}</p>
+      </div>
+    ))
+  )}
+</div>
       </div>
     </div>
   );
