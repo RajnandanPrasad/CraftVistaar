@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import HeroCarousel from "../components/HeroCarousel";
+
 import ProductCard from "../components/ProductCard";
 import SectionHeader from "../components/SectionHeader";
 import ProductCardSkeleton from "../components/ProductCardSkeleton";
+import CenteredCarousel from "../components/CenteredCarousel";
 import { fetchProducts } from "../api/products";
 import { filterHandmadeProducts, HANDMADE_CATEGORIES } from "../utils/handmadeFilter";
 import heroImg from "../assets/hero-handmade.jpg";
@@ -52,6 +53,28 @@ const fallbackProducts = [
   },
 ];
 
+const features = [
+  { icon: "🧵", title: "Handmade Quality", desc: "Crafted with love" },
+  { icon: "🔒", title: "Secure Payment", desc: "100% safe checkout" },
+  { icon: "🚚", title: "Fast Delivery", desc: "Quick shipping" },
+  { icon: "📞", title: "Customer Support", desc: "24/7 help" },
+];
+
+const faqs = [
+  {
+    question: "Are all products handmade?",
+    answer: "Yes, all products are crafted by verified artisans.",
+  },
+  {
+    question: "Do you offer returns?",
+    answer: "Yes, easy return policy available.",
+  },
+  {
+    question: "How long is delivery?",
+    answer: "Usually 3-7 business days.",
+  },
+];
+
 const promoCards = [
   {
     title: "Buy 1 Get 1 Ready",
@@ -70,37 +93,11 @@ const promoCards = [
   },
 ];
 
-const dealCards = [
-  {
-    title: "Up to 50% Off",
-    subtitle: "Selected craft essentials",
-    image: promo1,
-    accent: "bg-sky-100",
-  },
-  {
-    title: "Under ₹299",
-    subtitle: "Budget gifting made easy",
-    image: promo2,
-    accent: "bg-amber-100",
-  },
-  {
-    title: "Trending Now",
-    subtitle: "Top-rated handmade picks",
-    image: promo3,
-    accent: "bg-emerald-100",
-  },
-  {
-    title: "New in",
-    subtitle: "Fresh craft arrivals",
-    image: heroImg,
-    accent: "bg-violet-100",
-  },
-];
-
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openIndex, setOpenIndex] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -129,6 +126,10 @@ const Home = () => {
       mounted = false;
     };
   }, []);
+
+  const toggle = (i) => {
+    setOpenIndex(openIndex === i ? null : i);
+  };
 
   const trendingProducts = products.slice(0, 8);
   const bestDeals = [...products]
@@ -165,83 +166,35 @@ const Home = () => {
   ];
 
   return (
-    <div className="bg-slate-50 text-slate-900">
-      <section className="relative overflow-hidden bg-white pt-0 pb-10">
-        <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-sky-100 to-transparent" />
-        <div className="relative mx-auto grid max-w-[1400px] grid-cols-1 gap-4 px-4 pb-10 md:px-6 lg:grid-cols-3 lg:pb-12">
-          <div className="lg:col-span-2 w-full">
-            <HeroCarousel />
-          </div>
-
-          <div className="flex w-full flex-col gap-4">
-            {promoCards.map((card) => (
-              <div
-                key={card.title}
-                className="group relative overflow-hidden rounded-[28px] bg-white shadow-lg transition hover:-translate-y-1"
-              >
-                <img
-                  src={card.image}
-                  alt={card.title}
-                  className="h-40 w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-                <div className="bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent px-5 py-4 text-white">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-300">Limited Offer</p>
-                  <h2 className="mt-2 text-xl font-semibold leading-tight">{card.title}</h2>
-                  <p className="mt-1 text-sm text-slate-200">{card.subtitle}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+    <div className="bg-gradient-to-b from-slate-50 to-gray-50 text-slate-900 min-h-screen">
       <main className="mx-auto max-w-[1400px] px-4 pb-16 md:px-6">
-        <section className="mt-8 grid gap-4 lg:grid-cols-4">
-          {dealCards.map((deal) => (
-            <div
-              key={deal.title}
-              className={`group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${deal.accent}`}
-            >
-              <div className="h-40 overflow-hidden">
-                <img
-                  src={deal.image}
-                  alt={deal.title}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">{deal.subtitle}</p>
-                <h3 className="mt-3 text-xl font-semibold text-slate-900">{deal.title}</h3>
-              </div>
-            </div>
-          ))}
-        </section>
+        <div className="mt-6 md:mt-8">
+          <CenteredCarousel />
+        </div>
 
         {sectionCards.map((section) => (
-          <section key={section.title} className="mt-10">
+          <section key={section.title} className="mt-12 rounded-3xl bg-white/80 backdrop-blur-sm p-8 shadow-2xl border border-white/50">
             <SectionHeader
               title={section.title}
               subtitle={section.subtitle}
               actionText={section.actionText}
               actionLink={section.actionLink}
             />
-            <div className="mt-6">
+            <div className="mt-8">
               {loading ? (
-                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                <div className="grid gap-5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 auto-rows-fr">
                   {Array.from({ length: 10 }).map((_, idx) => (
-                    <div key={idx} className={idx === 0 ? "col-span-2 row-span-2" : "col-span-1"}>
-                      <ProductCardSkeleton />
-                    </div>
+                    <ProductCardSkeleton key={idx} />
                   ))}
                 </div>
               ) : section.products.length > 0 ? (
-                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                <div className="grid gap-5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 auto-rows-fr">
                   {section.products.slice(0, 10).map((product, index) => {
                     const isFeatured = index === 0;
                     return (
                       <div
                         key={product._id || product.id}
-                        className={isFeatured ? "col-span-2 row-span-2" : "col-span-1"}
+                        className={isFeatured ? "col-span-2 row-span-2 lg:col-span-1 lg:row-span-1" : "col-span-1"}
                       >
                         <ProductCard product={product} badge={section.badge} featured={isFeatured} />
                       </div>
@@ -249,8 +202,8 @@ const Home = () => {
                   })}
                 </div>
               ) : (
-                <div className="rounded-[28px] bg-white p-6 text-slate-600 shadow-sm">
-                  No products available in this section.
+                <div className="flex h-64 items-center justify-center rounded-3xl bg-gradient-to-r from-slate-100 to-gray-100 text-slate-500 shadow-inner">
+                  No products available yet
                 </div>
               )}
             </div>
@@ -287,6 +240,70 @@ const Home = () => {
                   <p className="mt-2 text-sm text-slate-500">Shop unique handmade picks for every style.</p>
                 </div>
               </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Why Choose Us Section */}
+        <div className="mt-16 max-w-[1400px] mx-auto px-4 md:px-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Why Choose Us</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {features.map((item) => (
+              <div key={item.title} className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 text-center border border-white/50 hover:-translate-y-2">
+                <div className="text-4xl md:text-5xl mb-4 mx-auto">{item.icon}</div>
+                <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-3">{item.title}</h3>
+                <p className="text-sm md:text-base text-slate-600 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Seller Artisan Story Section */}
+        <section className="mt-20 max-w-[1400px] mx-auto px-4 md:px-6">
+          <div className="bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 rounded-3xl p-8 md:p-12 flex flex-col lg:flex-row items-center gap-8 lg:gap-12 shadow-2xl">
+            <div className="flex-1 text-center lg:text-left">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900">Meet Our Artisans</h2>
+              <p className="text-lg md:text-xl text-slate-700 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                Discover handcrafted products made with passion by skilled artisans across India.
+              </p>
+              <Link 
+                to="/products" 
+                className="inline-flex items-center bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                Explore Stories →
+              </Link>
+            </div>
+            <div className="w-full lg:w-[450px] lg:flex-shrink-0">
+              <img 
+                src={promo2} 
+                alt="Artisan crafting handmade products"
+                className="w-full rounded-2xl object-cover shadow-2xl h-[300px] md:h-[400px] lg:h-[450px]" 
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="mt-24 max-w-4xl mx-auto px-4 md:px-6 pb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <div key={i} className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
+                <button
+                  className="w-full text-left p-8 font-semibold text-xl hover:text-orange-600 transition-colors duration-200 flex justify-between items-center group"
+                  onClick={() => toggle(i)}
+                >
+                  <span>{faq.question}</span>
+                  <span className="text-2xl transition-transform duration-200 group-hover:scale-110">
+                    {openIndex === i ? '−' : '+'}
+                  </span>
+                </button>
+                {openIndex === i && (
+                  <div className="px-8 pb-8 pt-4">
+                    <p className="text-slate-700 leading-relaxed">{faq.answer}</p>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </section>

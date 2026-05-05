@@ -43,8 +43,8 @@ const rating = product.rating || 0;
   const imageAspectClass = isFeatured ? "aspect-[4/4]" : "aspect-[4/3]";
 
   return (
-    <article className="group/card bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
-      <div className={`relative w-full overflow-hidden ${imageAspectClass}`}>
+<article className="group/card bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 h-full flex flex-col">
+      <div className="relative h-56 w-full overflow-hidden">
         <img
           src={imageUrl}
           alt={product?.title || 'Product'}
@@ -78,8 +78,9 @@ const rating = product.rating || 0;
         </div>
       </div>
 
-      <div className="p-5 space-y-3">
+      <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
         <div className="flex flex-wrap items-center gap-2">
+
           {product?.category && (
             <span className="rounded-full bg-gradient-to-r from-indigo-100 to-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-800 border border-indigo-200 shadow-sm">
               {product.category}

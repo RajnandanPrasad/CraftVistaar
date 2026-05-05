@@ -49,12 +49,12 @@ const HeroCarousel = () => {
   const activeSlide = slides[activeIndex];
 
   return (
-    <div className="group relative overflow-hidden rounded-[28px] bg-slate-900 text-white shadow-2xl ring-1 ring-slate-800/70 transition-all duration-300">
-      <div className="grid min-h-[520px] gap-6 lg:grid-cols-2">
+  <div className="relative w-full rounded-2xl shadow-xl border border-amber-200/50 overflow-hidden bg-gradient-to-br from-amber-50/90 to-orange-50/90 backdrop-blur-sm">
+      <div className="grid h-[260px] sm:h-[280px] md:h-[320px] lg:h-[360px] gap-8 lg:grid-cols-2 items-center p-6 lg:p-8 xl:p-12">
         <div className="flex flex-col justify-between gap-6 p-8 sm:p-10 lg:p-12">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.24em] text-slate-200">
+          <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-gradient-to-r from-amber-400/20 to-orange-400/20 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-amber-800 shadow-sm backdrop-blur">
             {activeSlide.label}
-          </div>
+          </span>
           <div className="space-y-5">
             <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
               {activeSlide.title}
@@ -66,7 +66,7 @@ const HeroCarousel = () => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <Link
               to="/products"
-              className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-amber-300/30 transition hover:bg-amber-300"
+              className="group btn inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 text-sm font-bold text-slate-900 shadow-xl shadow-amber-400/50 hover:shadow-2xl hover:from-amber-600 hover:to-orange-600 hover:scale-[1.02] transition-all duration-300 border border-amber-400/50"
             >
               {activeSlide.cta}
             </Link>
@@ -90,13 +90,12 @@ const HeroCarousel = () => {
           </div>
         </div>
 
-        <div className="relative overflow-hidden">
+        <div className="relative flex h-full items-center justify-center p-8 lg:p-12 rounded-r-2xl">
           <img
             src={activeSlide.image}
             alt={activeSlide.title}
-            className="h-full w-full object-cover transition duration-700 ease-out"
+            className="h-[280px] w-auto max-w-full max-h-full object-contain rounded-xl shadow-2xl ring-1 ring-white/30"
           />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
         </div>
       </div>
     </div>
